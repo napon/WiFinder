@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="12"
         android:targetSdkVersion="19" />
 
     <!-- Permissions for Google Maps - Napon -->
@@ -31,7 +31,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyDd3Z4E2zzWy749BlQAln7IUAe5X_-dVUI" />
+            android:value="AIzaSyCtFuvCxsdA7QR7C3GCIwyXDaM-LduO9QA" />
 
         <activity
             android:name="ui.MapActivity"
