@@ -1,5 +1,9 @@
 package ui;
 
+import java.util.List;
+
+import model.WiFiPoint;
+
 import android.os.Bundle;
 import android.app.Activity;
 
@@ -7,7 +11,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.napontaratan.wifinder.R;
+
+import controller.WiFinderServerConnection;
 
 public class MapActivity extends Activity {
 
@@ -34,5 +41,23 @@ public class MapActivity extends Activity {
 
 		map.moveCamera(CameraUpdateFactory.newLatLng(VANCOUVER));
 		map.animateCamera(CameraUpdateFactory.zoomTo(11));
+		
+		WiFinderServerConnection connection = WiFinderServerConnection.getInstance();
+		List<WiFiPoint> points = connection.getWiFiPoints();
+		for(WiFiPoint wp : points){
+			plotPoint(wp);
+		}
+	}
+
+	/**
+	 * Plot the WiFiPoint on the map view
+	 * @author napontaratan
+	 * @param wp Point to plot on the map
+	 */
+	private void plotPoint(WiFiPoint wp) {
+		map.addMarker(new MarkerOptions()
+			.position(new LatLng(wp.getLatitude(),wp.getLongitude()))
+			.title(wp.getName())
+			.snippet("Signal Strength: " + wp.getSignalStrength()));
 	}
 }
