@@ -6,19 +6,19 @@ package model;
  */
 public class LatLon {
 
-	int latitude;
-	int longitude;
+	double latitude;
+	double longitude;
 
-	public LatLon(int lat, int lon){
+	public LatLon(double lat, double lon){
 		latitude = lat;
 		longitude = lon;
 	}
 
-	public int getLatitude(){
+	public double getLatitude(){
 		return this.latitude;
 	}
 
-	public int getLongitude(){
+	public double getLongitude(){
 		return this.longitude;
 	}
 }

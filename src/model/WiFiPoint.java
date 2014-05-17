@@ -11,7 +11,7 @@ public class WiFiPoint {
 	int signalStrength;
 	LatLon location;
 
-	public WiFiPoint(String name, int signal, int lat, int lon){
+	public WiFiPoint(String name, int signal, double lat, double lon){
 		this.name = name;
 		this.signalStrength = signal;
 		this.location = new LatLon(lat, lon);
