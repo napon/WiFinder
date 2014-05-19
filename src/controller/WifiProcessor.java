@@ -1,6 +1,6 @@
 package controller;
 
-import model.WifiConnection;
+import model.WiFiPoint;
 
 import java.util.List;
 
@@ -31,8 +31,8 @@ public class WifiProcessor extends BroadcastReceiver {
 						getSystemService(Context.WIFI_SERVICE)).
 						getScanResults();
 		
-		List<WifiConnection> buffer =
-				((MapActivity) context).getWifiConnectionBuffer();
+		WiFiController controller = new WiFiController(context);
+		List<WiFiPoint> buffer = controller.getWiFiPointBuffer();
 		
 		// **We need location data. I'm assuming it's been
 		// taken care of somewhere else and is available.
