@@ -19,7 +19,25 @@ import com.napontaratan.wifinder.R;
 import controller.WiFinderServerConnection;
 
 public class MapActivity extends Activity {
-
+	
+/******************************************************************************************/
+// Wifi stuff
+	
+	/**
+	 * Buffer used to store unsent WifiConnection objects.
+	 */
+	private List<WifiConnection> wifiConnectionBuffer = new ArrayList<WifiConnection>(); // Maybe a different container type?
+	
+	/**
+	 * @return Buffer holding unsent WifiConnection objects.
+	 * 
+	 * @author Kurt Ahn
+	 */
+	public List<WifiConnection> getWifiConnectionBuffer() {
+		return wifiConnectionBuffer;
+	}
+/******************************************************************************************/
+	
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 
