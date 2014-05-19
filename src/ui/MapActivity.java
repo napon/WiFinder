@@ -3,9 +3,11 @@ package ui;
 import java.util.List;
 
 import model.WiFiPoint;
-
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,12 +43,8 @@ public class MapActivity extends Activity {
 
 		map.moveCamera(CameraUpdateFactory.newLatLng(VANCOUVER));
 		map.animateCamera(CameraUpdateFactory.zoomTo(11));
-		
-		WiFinderServerConnection connection = WiFinderServerConnection.getInstance();
-		List<WiFiPoint> points = connection.getWiFiPoints();
-		for(WiFiPoint wp : points){
-			plotPoint(wp);
-		}
+
+		new GetLocationsTask(this).execute();
 	}
 
 	/**
@@ -56,8 +54,49 @@ public class MapActivity extends Activity {
 	 */
 	private void plotPoint(WiFiPoint wp) {
 		map.addMarker(new MarkerOptions()
-			.position(new LatLng(wp.getLatitude(),wp.getLongitude()))
-			.title(wp.getName())
-			.snippet("Signal Strength: " + wp.getSignalStrength()));
+		.position(new LatLng(wp.getLatitude(),wp.getLongitude()))
+		.title(wp.getName())
+		.snippet("Signal Strength: " + wp.getSignalStrength()));
+	}
+
+	/**
+	 * Create a single thread to fetch locations from the database and plot them on the map
+	 * @author napontaratan
+	 */
+	private class GetLocationsTask extends AsyncTask<String, Void, Void>  {
+
+		private ProgressDialog dialog;
+		private WiFinderServerConnection connection = WiFinderServerConnection.getInstance();
+
+		public GetLocationsTask(Context c){
+			dialog = new ProgressDialog(c);
+		}
+
+		// show the spinning loading wheel for style points
+		@Override
+		protected void onPreExecute() {
+			dialog.setMessage("Retrieving WiFi locations...");
+			dialog.show();
+		}
+
+		// create web request and parse the response
+		@Override
+		protected Void doInBackground(String ...s) {
+			String jsonResponse = connection.makeJSONQuery(connection.WEBSERVER);
+			connection.parseJSONLocationData(jsonResponse);
+			return null;
+		}
+
+		// plot the locations on the map
+		@Override
+		protected void onPostExecute(Void v) {
+			List<WiFiPoint> points = connection.getWiFiPoints();
+			for(WiFiPoint wp : points){
+				plotPoint(wp);
+			}
+
+			System.out.println("*** NUMBER OF LOCATIONS = " + points.size() + " ***");
+			dialog.dismiss();
+		}
 	}
 }

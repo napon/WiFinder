@@ -1,15 +1,16 @@
 package controller;
 
-import java.io.StringReader;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import model.WiFiPoint;
 
@@ -20,11 +21,12 @@ import model.WiFiPoint;
 public class WiFinderServerConnection {
 
 	private static WiFinderServerConnection instance = null;
-	
+	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/locations.php";
+
 	final List<WiFiPoint> points = new ArrayList<WiFiPoint>();
-	
+
 	// allow only one instance of WiFinderServerConnection
-	private WiFinderServerConnection() { fetchLocations(); }
+	private WiFinderServerConnection() {}
 
 	public static WiFinderServerConnection getInstance() {
 		if(instance == null)
@@ -32,59 +34,40 @@ public class WiFinderServerConnection {
 		return instance;
 	}
 
-	// retrieve locations from server
-	public void fetchLocations(){
-
-		//using sample data, since server is not setup yet
-		// TODO: parse xml content into List of WiFiPoint
-
+	// parses JSON string and populates the list
+	public void parseJSONLocationData(String response){
 		try {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			SAXParser saxParser = factory.newSAXParser();
-
-			DefaultHandler handler = new DefaultHandler() {
-
-				String name;
-				double latitude;
-				double longitude;
-				int signalStrength;
-
-				StringBuffer accumulator = new StringBuffer();
-
-				public void endElement(String uri, String localName, String qName) throws SAXException {
-
-					if(qName.equals("name")){
-						name = accumulator.toString();
-					} else if(qName.equals("latitude")) {
-						latitude = Double.parseDouble(accumulator.toString());
-					} else if(qName.equals("longitude")) {
-						longitude = Double.parseDouble(accumulator.toString());
-					} else if(qName.equals("signal_strength")) {
-						signalStrength = Integer.parseInt(accumulator.toString());
-					} else if(qName.equals("hotspot")) {
-						WiFiPoint wf = new WiFiPoint(name, signalStrength, latitude, longitude);
-						points.add(wf);
-					}
-
-					accumulator = new StringBuffer();
-
-				}
-
-				public void characters(char[] ch, int start, int length) throws SAXException {
-					accumulator.append(new String(ch, start, length).trim());
-				}
-
-			};
-
-			saxParser.parse(new InputSource(new StringReader(SampleData.SAMPLE_XML_RESPONSE)), handler);
-
+			JSONTokener raw 	= new JSONTokener(response);
+			JSONArray jsArray	= new JSONArray(raw);
+			for(int i = 0; i < jsArray.length(); i++) {
+				JSONObject obj = (JSONObject) jsArray.get(i);
+				WiFiPoint wifiPoint = new WiFiPoint(obj.getString("Name"), obj.getInt("SignalStrength"), obj.getDouble("Latitude"), obj.getDouble("Longitude"));
+				points.add(wifiPoint);
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	public List<WiFiPoint> getWiFiPoints(){
 		return points;
+	}
+
+	// make http request and return the response string
+	public String makeJSONQuery(String server) {
+		try {
+			System.out.println("make JSON query to server");
+			URL url = new URL(server);
+			HttpURLConnection client = (HttpURLConnection) url.openConnection();
+			InputStream in = client.getInputStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String returnString = br.readLine();
+			client.disconnect();
+			System.out.println("return is " + returnString);
+			return returnString;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
