@@ -1,4 +1,4 @@
-package model;
+package com.napontaratan.wifi.model;
 
 import android.net.wifi.ScanResult;
 
@@ -69,7 +69,7 @@ public class WifiConnection {
 	 * SSID: {@link #ssid}</br>
 	 * BSSID: {@link #bssid}</br>
 	 * Strength: {@link #strength}</br>
-	 * Location: {@link #WifiLocation.latitude} {@link #WifiLocation.longitude}</br>
+	 * Location: {@link #location} {@link #location.longitude}</br>
 	 * Time: {@link #time}</br>
 	 * Client ID: {@link #clientId} </br>
 	 * </p>

@@ -1,4 +1,4 @@
-package controller;
+package com.napontaratan.wifi.controller;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -12,25 +12,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import model.WiFiPoint;
+import com.napontaratan.wifi.model.WifiMarker;
 
-/**
- * Establish a connection with the server and parses its response
- * @author napontaratan
- */
-public class WiFinderServerConnection {
-
-	private static WiFinderServerConnection instance = null;
+public class ServerConnection {
+	private static ServerConnection instance = null;
 	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/locations.php";
 
-	final List<WiFiPoint> points = new ArrayList<WiFiPoint>();
+	final List<WifiMarker> markers = new ArrayList<WifiMarker>();
 
 	// allow only one instance of WiFinderServerConnection
-	private WiFinderServerConnection() {}
+	private ServerConnection() {}
 
-	public static WiFinderServerConnection getInstance() {
+	public static ServerConnection getInstance() {
 		if(instance == null)
-			instance = new WiFinderServerConnection();
+			instance = new ServerConnection();
 		return instance;
 	}
 
@@ -41,16 +36,21 @@ public class WiFinderServerConnection {
 			JSONArray jsArray	= new JSONArray(raw);
 			for(int i = 0; i < jsArray.length(); i++) {
 				JSONObject obj = (JSONObject) jsArray.get(i);
-				WiFiPoint wifiPoint = new WiFiPoint(obj.getString("Name"), obj.getInt("SignalStrength"), obj.getDouble("Latitude"), obj.getDouble("Longitude"));
-				points.add(wifiPoint);
+				WifiMarker marker = 
+						new WifiMarker(
+								obj.getString("Name"), 
+								obj.getInt("SignalStrength"), 
+								obj.getDouble("Latitude"), 
+								obj.getDouble("Longitude"));
+				markers.add(marker);
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public List<WiFiPoint> getWiFiPoints(){
-		return points;
+	public List<WifiMarker> getWifiMarkers(){
+		return markers;
 	}
 
 	// make http request and return the response string

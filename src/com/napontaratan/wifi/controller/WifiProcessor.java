@@ -1,8 +1,8 @@
-package controller;
-
-import model.WiFiPoint;
+package com.napontaratan.wifi.controller;
 
 import java.util.List;
+
+import com.napontaratan.wifi.model.WifiConnection;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,8 +31,9 @@ public class WifiProcessor extends BroadcastReceiver {
 						getSystemService(Context.WIFI_SERVICE)).
 						getScanResults();
 		
-		WiFiController controller = new WiFiController(context);
-		List<WiFiPoint> buffer = controller.getWiFiPointBuffer();
+		WifiController controller = new WifiController(context);
+		List<WifiConnection> buffer = 
+				controller.getWifiConnectionBuffer();
 		
 		// **We need location data. I'm assuming it's been
 		// taken care of somewhere else and is available.

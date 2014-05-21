@@ -1,22 +1,21 @@
-package ui;
+package com.napontaratan.wifi.view;
 
 import java.util.List;
 
-import model.WiFiPoint;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Bundle;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.napontaratan.wifinder.R;
-
-import controller.WiFinderServerConnection;
+import com.napontaratan.wifi.R;
+import com.napontaratan.wifi.controller.ServerConnection;
+import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
 	
@@ -48,15 +47,18 @@ public class MapActivity extends Activity {
 	}
 
 	/**
-	 * Plot the WiFiPoint on the map view
+	 * Plot a marker on the map view
+	 * 
 	 * @author napontaratan
-	 * @param wp Point to plot on the map
+	 * @param marker - Marker to plot on the map
 	 */
-	private void plotPoint(WiFiPoint wp) {
+	private void plotMarker(WifiMarker marker) {
 		map.addMarker(new MarkerOptions()
-		.position(new LatLng(wp.getLatitude(),wp.getLongitude()))
-		.title(wp.getName())
-		.snippet("Signal Strength: " + wp.getSignalStrength()));
+		.position(new LatLng(
+				marker.location.latitude,
+				marker.location.longitude))
+		.title("SSID: " + marker.ssid)
+		.snippet("Signal Strength: " + marker.strength));
 	}
 
 	/**
@@ -66,7 +68,9 @@ public class MapActivity extends Activity {
 	private class GetLocationsTask extends AsyncTask<String, Void, Void>  {
 
 		private ProgressDialog dialog;
-		private WiFinderServerConnection connection = WiFinderServerConnection.getInstance();
+		
+		private ServerConnection connection = 
+				ServerConnection.getInstance();
 
 		public GetLocationsTask(Context c){
 			dialog = new ProgressDialog(c);
@@ -90,12 +94,12 @@ public class MapActivity extends Activity {
 		// plot the locations on the map
 		@Override
 		protected void onPostExecute(Void v) {
-			List<WiFiPoint> points = connection.getWiFiPoints();
-			for(WiFiPoint wp : points){
-				plotPoint(wp);
+			List<WifiMarker> markers = connection.getWifiMarkers();
+			for(WifiMarker m : markers){
+				plotMarker(m);
 			}
 
-			System.out.println("*** NUMBER OF LOCATIONS = " + points.size() + " ***");
+			System.out.println("*** NUMBER OF LOCATIONS = " + markers.size() + " ***");
 			dialog.dismiss();
 		}
 	}
