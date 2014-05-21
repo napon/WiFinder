@@ -18,7 +18,7 @@ import com.napontaratan.wifi.controller.ServerConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
-	
+
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 
@@ -57,8 +57,8 @@ public class MapActivity extends Activity {
 		.position(new LatLng(
 				marker.location.latitude,
 				marker.location.longitude))
-		.title("SSID: " + marker.ssid)
-		.snippet("Signal Strength: " + marker.strength));
+				.title("SSID: " + marker.ssid)
+				.snippet("Signal Strength: " + marker.strength));
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class MapActivity extends Activity {
 	private class GetLocationsTask extends AsyncTask<String, Void, Void>  {
 
 		private ProgressDialog dialog;
-		
+
 		private ServerConnection connection = 
 				ServerConnection.getInstance();
 

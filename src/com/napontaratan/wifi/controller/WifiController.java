@@ -10,7 +10,7 @@ import android.content.Context;
 public class WifiController {
 
 	/**
-	 * Buffer used to store unsent WiFiPoint objects.
+	 * Buffer used to store unsent WifiConnection objects.
 	 */
 	private List<WifiConnection> wifiConnectionBuffer = 
 			new ArrayList<WifiConnection>(); // Maybe a different container type?
@@ -21,7 +21,7 @@ public class WifiController {
 	}
 	
 	/**
-	 * @return Buffer holding unsent WiFiPoint objects.
+	 * @return Buffer holding unsent WifiConnection objects.
 	 * 
 	 * @author Kurt Ahn
 	 */

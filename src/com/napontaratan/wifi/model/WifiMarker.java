@@ -9,11 +9,11 @@ import com.google.android.gms.maps.model.LatLng;
  */
 public class WifiMarker {
 	public String ssid;
-	
+
 	public int strength;
-	
+
 	public LatLng location;
-	
+
 	/**
 	 * Construct a WifiMarker object. Note that this is only for 
 	 * testing purposes.
@@ -24,8 +24,7 @@ public class WifiMarker {
 	 * 
 	 * @author Kurt Ahn
 	 */
-	public WifiMarker(
-			String ssid, int strength, double latitude, double longitude) {
+	public WifiMarker(String ssid, int strength, double latitude, double longitude) {
 		this.ssid = ssid;
 		this.strength = strength;
 		this.location = new LatLng(latitude, longitude);
