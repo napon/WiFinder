@@ -46,24 +46,22 @@
             </intent-filter>
         </activity>
 
-        <!--
-        <receiver android:name="controller.WifiScanner">
+        <receiver android:name="com.napontaratan.wifi.controller.WifiScanner">
             <intent-filter>
                 <action android:name="android.net.wifi.STATE_CHANGE"/>
             	<action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-            	
+            	<!--
             	TODO:
             	    Add action for location change.
-            	
+            	-->
             </intent-filter>
         </receiver>
         
-        <receiver android:name="controller.WifiProcessor">
+        <receiver android:name="com.napontaratan.wifi.controller.WifiProcessor">
             <intent-filter>
                 <action android:name="android.net.wifi.SCAN_RESULTS"/>
             </intent-filter>
         </receiver>
-        -->
 
     </application>
 
