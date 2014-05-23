@@ -15,11 +15,6 @@ public class WifiController {
 	private List<WifiConnection> wifiConnectionBuffer = 
 			new ArrayList<WifiConnection>(); // Maybe a different container type?
 	
-	
-	public WifiController(Context context) {
-		// DO SOMETHING
-	}
-	
 	/**
 	 * @return Buffer holding unsent WifiConnection objects.
 	 * 
@@ -28,5 +23,8 @@ public class WifiController {
 	public List<WifiConnection> getWifiConnectionBuffer() {
 		return wifiConnectionBuffer;
 	}
-
+	
+	public WifiController(Context context) {
+		// DO SOMETHING
+	}
 }

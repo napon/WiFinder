@@ -2,6 +2,8 @@ package com.napontaratan.wifi.model;
 
 import android.net.wifi.ScanResult;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
  * Simple struct-like object with description about an available wireless connection.
  *
@@ -26,7 +28,8 @@ public class WifiConnection {
 	/**
 	 * Location of discovery.
 	 */
-	public final WifiLocation location;
+//	public final WifiLocation location;
+	public final LatLng location;
 	
 	/**
 	 * Time of discovery.
@@ -53,7 +56,7 @@ public class WifiConnection {
 	 * @author Kurt Ahn
 	 */
 	public WifiConnection(
-			ScanResult scan, WifiLocation location, String clientId) {
+			ScanResult scan, LatLng location, String clientId) {
 		this.ssid = scan.SSID;
 		this.bssid = scan.BSSID;
 		this.strength = scan.level;
@@ -69,7 +72,7 @@ public class WifiConnection {
 	 * SSID: {@link #ssid}</br>
 	 * BSSID: {@link #bssid}</br>
 	 * Strength: {@link #strength}</br>
-	 * Location: {@link #location} {@link #location.longitude}</br>
+	 * Location: {@link #location}</br>
 	 * Time: {@link #time}</br>
 	 * Client ID: {@link #clientId} </br>
 	 * </p>
