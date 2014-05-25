@@ -18,6 +18,7 @@
 
     <!-- Permissions required for wireless connection data access - Kurt -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <!-- Google Maps uses OpenGL ES Version 2.0 - Napon -->
     <uses-feature
