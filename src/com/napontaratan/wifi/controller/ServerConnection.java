@@ -12,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
 /**
@@ -59,7 +58,9 @@ public class ServerConnection {
 								obj.getString("Name"), 
 								obj.getInt("SignalStrength"), 
 								obj.getDouble("Latitude"), 
-								obj.getDouble("Longitude"));
+								obj.getDouble("Longitude"),
+								obj.getString("DateDiscovered"),
+								obj.getInt("UserID"));
 				markers.add(marker);
 			}
 		} catch(Exception e) {
@@ -71,17 +72,17 @@ public class ServerConnection {
 	 * PUSH
 	 * Pushes a new Wifi location to the web server
 	 * 
-	 * @param wc - WifiConnection
+	 * @param wm - WifiMarker
 	 * @author Napon Taratan
 	 */
-	public void pushNewLocation(WifiConnection wc){
+	public void pushNewLocation(WifiMarker wm){
 		
-		String ssid = wc.getSSID();
-		int sigStrength = wc.getSignalStrength();
-		String dateDiscovered = wc.getDate().toString();
-		int user = wc.getClientId();
-		double lat = wc.getLocation().latitude;
-		double lon = wc.getLocation().longitude;
+		String ssid = wm.getSSID();
+		int sigStrength = wm.getSignalStrength();
+		String dateDiscovered = wm.getDate().toString();
+		int user = wm.getClientId();
+		double lat = wm.getLocation().latitude;
+		double lon = wm.getLocation().longitude;
 		
 		String url = WEBSERVER + "add_location.php?ssid=" + ssid + 
 												"&signal=" + sigStrength +

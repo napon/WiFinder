@@ -2,7 +2,7 @@ package com.napontaratan.wifi.database;
 
 import java.io.IOException;
 
-import com.napontaratan.wifi.model.WifiConnection;
+import com.napontaratan.wifi.model.WifiMarker;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -20,7 +20,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 	private static final String TABLE_NAME = "buffer";
 	private static final String KEY_ID = "id";
-	private static final String KEY_DATA = "wifiConnection";
+	private static final String KEY_DATA = "WifiMarker";
 
 	public OfflineWifiDB(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION); 
@@ -39,16 +39,16 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Add a WifiConnection object to the DB
+	 * Add a WifiMarker object to the DB
 	 * @author Napon Taratan
 	 */
-	public void addToDB(WifiConnection wc) {
+	public void addToDB(WifiMarker wc) {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = new ContentValues();
 
 		try {
-			values.put(KEY_DATA, WifiConnection.serialize(wc));
+			values.put(KEY_DATA, WifiMarker.serialize(wc));
 		} catch (IOException e) {
 			System.out.println("IOException caught in addToDB()");
 			e.printStackTrace();

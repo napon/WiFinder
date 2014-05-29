@@ -2,7 +2,7 @@ package com.napontaratan.wifi.controller;
 
 import java.util.List;
 
-import com.napontaratan.wifi.model.WifiConnection;
+import com.napontaratan.wifi.model.WifiMarker;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,7 +32,7 @@ public class WifiProcessor extends BroadcastReceiver {
 						getScanResults();
 		
 		WifiController controller = new WifiController(context);
-		List<WifiConnection> buffer = 
+		List<WifiMarker> buffer = 
 				controller.getWifiConnectionBuffer();
 		
 		// **We need location data. I'm assuming it's been

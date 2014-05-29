@@ -54,10 +54,10 @@ public class MapActivity extends Activity {
 	private void plotMarker(WifiMarker marker) {
 		map.addMarker(new MarkerOptions()
 		.position(new LatLng(
-				marker.location.latitude,
-				marker.location.longitude))
-				.title("SSID: " + marker.ssid)
-				.snippet("Signal Strength: " + marker.strength));
+				marker.getLocation().latitude,
+				marker.getLocation().longitude))
+				.title("SSID: " + marker.getSSID())
+				.snippet("Signal Strength: " + marker.getSignalStrength()));
 	}
 
 	/**
