@@ -12,11 +12,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
+/**
+ * Establish connection with the remote server for
+ * - fetch wifi points
+ * - push new wifi points
+ *  
+ * @author Napon Taratan
+ */
 public class ServerConnection {
 	private static ServerConnection instance = null;
-	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/locations.php";
+	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/";
 
 	final List<WifiMarker> markers = new ArrayList<WifiMarker>();
 
@@ -29,7 +37,17 @@ public class ServerConnection {
 		return instance;
 	}
 
-	// parses JSON string and populates the list
+	public List<WifiMarker> getWifiMarkers(){
+		return markers;
+	}
+	
+	/**
+	 * FETCH
+	 * Parses the JSON response and populates the list
+	 * 
+	 * @param response
+	 * @author Napon Taratan
+	 */
 	public void parseJSONLocationData(String response){
 		try {
 			JSONTokener raw 	= new JSONTokener(response);
@@ -49,11 +67,40 @@ public class ServerConnection {
 		}
 	}
 
-	public List<WifiMarker> getWifiMarkers(){
-		return markers;
+	/**
+	 * PUSH
+	 * Pushes a new Wifi location to the web server
+	 * 
+	 * @param wc - WifiConnection
+	 * @author Napon Taratan
+	 */
+	public void pushNewLocation(WifiConnection wc){
+		
+		String ssid = wc.getSSID();
+		int sigStrength = wc.getSignalStrength();
+		String dateDiscovered = wc.getDate().toString();
+		int user = wc.getClientId();
+		double lat = wc.getLocation().latitude;
+		double lon = wc.getLocation().longitude;
+		
+		String url = WEBSERVER + "add_location.php?ssid=" + ssid + 
+												"&signal=" + sigStrength +
+												"&lat=" + lat +
+												"&lon=" + lon +
+												"&user=" + user +
+												"&date=" + dateDiscovered;
+		
+		String response = makeJSONQuery(url);
+		System.out.println(response);
+		
 	}
-
-	// make http request and return the response string
+	
+	/**
+	 * Creates an HTTP request to the server and returns the server's response
+	 * 
+	 * @param server - url of request
+	 * @author Napon Taratan
+	 */
 	public String makeJSONQuery(String server) {
 		try {
 			System.out.println("make JSON query to server");

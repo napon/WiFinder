@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.Date;
 
 import android.net.wifi.ScanResult;
 
@@ -19,38 +20,63 @@ public class WifiConnection {
     /**
      * Unique ID of the connection.
      */
-	public final String ssid;
+	private final String ssid;
 	
 	/**
 	 * Unique ID of the access point.
 	 */
-	public final String bssid;
+	private final String bssid;
 	
 	/**
 	 * Detected signal strength.
 	 */
-	public final int strength;
+	private final int strength;
 	
 	/**
 	 * Location of discovery.
 	 */
-//	public final WifiLocation location;
-	public final LatLng location;
+	private final LatLng location;
 	
 	/**
 	 * Time of discovery.
 	 */
-	public final long time;
+	private final Date date;
 	
 	/**
 	 * Unique ID given to the application's user.
 	 */
-	public final String clientId;
+	private final int clientId;
+	
+	// ==== getters ====
+	
+	public String getSSID() {
+		return ssid;
+	}
+
+	public String getBSSID() {
+		return bssid;
+	}
+
+	public int getSignalStrength() {
+		return strength;
+	}
+
+	public LatLng getLocation() {
+		return location;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public int getClientId() {
+		return clientId;
+	}
 	
 	/*
 	 * TODO: We need information about whether the connection is secured, etc.
 	 */
-	
+
 	/**
 	 * Construct a WifiConnection.
 	 *
@@ -62,26 +88,18 @@ public class WifiConnection {
 	 * @author Kurt Ahn
 	 */
 	public WifiConnection(
-			ScanResult scan, LatLng location, String clientId) {
+			ScanResult scan, LatLng location, int clientId) {
 		this.ssid = scan.SSID;
 		this.bssid = scan.BSSID;
 		this.strength = scan.level;
 		this.location = location;
 		//this.time = scan.timestamp; // This requires min API level of 17
-		this.time = 0L; // Temporary
+		this.date = Date.valueOf("0000-00-00"); // Temporary
 		this.clientId = clientId;
 	}
 	
 	/**
-	 * @return Information about the connection formatted as:
-	 * <p>
-	 * SSID: {@link #ssid}</br>
-	 * BSSID: {@link #bssid}</br>
-	 * Strength: {@link #strength}</br>
-	 * Location: {@link #location}</br>
-	 * Time: {@link #time}</br>
-	 * Client ID: {@link #clientId} </br>
-	 * </p>
+	 * @return Information about the connection
 	 * 
 	 * @author Kurt Ahn
 	 */
@@ -92,7 +110,7 @@ public class WifiConnection {
 			"BSSID: " + bssid + "\n" +
 			"Strength: " + String.valueOf(strength) + "\n" +
 			"Location: " + location.latitude + " "  + location.longitude + "\n" +
-			"Time: " + String.valueOf(time) + "\n" + 
+			"Time: " + String.valueOf(date) + "\n" + 
 			"Client ID: " + clientId;
 	}
 	

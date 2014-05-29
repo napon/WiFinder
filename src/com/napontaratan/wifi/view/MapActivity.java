@@ -32,7 +32,7 @@ public class MapActivity extends Activity {
 
 	/**
 	 * Basic map view centered at Vancouver
-	 * @author napontaratan
+	 * @author Napon Taratan
 	 */
 	private void setUpMap() {
 		if(map == null) {
@@ -48,9 +48,8 @@ public class MapActivity extends Activity {
 
 	/**
 	 * Plot a marker on the map view
-	 * 
-	 * @author napontaratan
 	 * @param marker - Marker to plot on the map
+	 * @author Napon Taratan
 	 */
 	private void plotMarker(WifiMarker marker) {
 		map.addMarker(new MarkerOptions()
@@ -62,8 +61,10 @@ public class MapActivity extends Activity {
 	}
 
 	/**
-	 * Create a single thread to fetch locations from the database and plot them on the map
-	 * @author napontaratan
+	 * Create a single thread to fetch locations based on the user input and plot them on the map
+	 * Also start a loading wheel to work in progress
+	 * 
+	 * @author Napon Taratan
 	 */
 	private class GetLocationsTask extends AsyncTask<String, Void, Void>  {
 
@@ -86,7 +87,8 @@ public class MapActivity extends Activity {
 		// create web request and parse the response
 		@Override
 		protected Void doInBackground(String ...s) {
-			String jsonResponse = connection.makeJSONQuery(connection.WEBSERVER);
+			String url = connection.WEBSERVER + "locations.php?lat=49.263604&lon=-123.247805&rad=3"; // sample code for the time being
+			String jsonResponse = connection.makeJSONQuery(url);
 			connection.parseJSONLocationData(jsonResponse);
 			return null;
 		}
