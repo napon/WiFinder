@@ -2,15 +2,16 @@ package com.napontaratan.wifi.database;
 
 import java.io.IOException;
 
-import com.napontaratan.wifi.model.WifiMarker;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.napontaratan.wifi.model.WifiConnection;
+import com.napontaratan.wifi.model.WifiMarker;
+
 /**
- * Offline database to store new wifi locations waiting to be pushed to the remote server
+ * Offline database to store new WifiConnections waiting to be pushed to the remote server
  * @author Napon Taratan
  */
 public class OfflineWifiDB extends SQLiteOpenHelper {
@@ -20,7 +21,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 	private static final String TABLE_NAME = "buffer";
 	private static final String KEY_ID = "id";
-	private static final String KEY_DATA = "WifiMarker";
+	private static final String KEY_DATA = "WifiConnection";
 
 	public OfflineWifiDB(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION); 
@@ -42,13 +43,13 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	 * Add a WifiMarker object to the DB
 	 * @author Napon Taratan
 	 */
-	public void addToDB(WifiMarker wc) {
+	public void addToDB(WifiConnection connection) {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = new ContentValues();
 
 		try {
-			values.put(KEY_DATA, WifiMarker.serialize(wc));
+			values.put(KEY_DATA, WifiMarker.serialize(connection));
 		} catch (IOException e) {
 			System.out.println("IOException caught in addToDB()");
 			e.printStackTrace();

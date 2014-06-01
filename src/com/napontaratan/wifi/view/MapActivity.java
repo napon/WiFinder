@@ -18,7 +18,11 @@ import com.napontaratan.wifi.controller.ServerConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
-
+	/*
+	 * TODO FIX plotMarker() !!!!!
+	 * TODO @PrestonChang: Fix the map around where user is in doInBackground()
+	 */
+	
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 
@@ -52,12 +56,12 @@ public class MapActivity extends Activity {
 	 * @author Napon Taratan
 	 */
 	private void plotMarker(WifiMarker marker) {
-		map.addMarker(new MarkerOptions()
-		.position(new LatLng(
-				marker.getLocation().latitude,
-				marker.getLocation().longitude))
-				.title("SSID: " + marker.getSSID())
-				.snippet("Signal Strength: " + marker.getSignalStrength()));
+		//map.addMarker(new MarkerOptions()
+		//.position(new LatLng(
+		//		marker.getLocation().latitude,
+		//		marker.getLocation().longitude))
+		//		.title("SSID: " + marker.getSSID())
+		//		.snippet("Signal Strength: " + marker.getSignalStrength()));
 	}
 
 	/**

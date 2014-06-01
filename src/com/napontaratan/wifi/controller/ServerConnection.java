@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
 /**
@@ -22,6 +23,10 @@ import com.napontaratan.wifi.model.WifiMarker;
  * @author Napon Taratan
  */
 public class ServerConnection {
+	/*
+	 * TODO FIX parseJSONLocationData()!!!!!
+	 */
+	
 	private static ServerConnection instance = null;
 	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/";
 
@@ -53,14 +58,14 @@ public class ServerConnection {
 			JSONArray jsArray	= new JSONArray(raw);
 			for(int i = 0; i < jsArray.length(); i++) {
 				JSONObject obj = (JSONObject) jsArray.get(i);
-				WifiMarker marker = 
-						new WifiMarker(
+				WifiMarker marker = null; // WAT DOo??
+						/*new WifiMarker(
 								obj.getString("Name"), 
 								obj.getInt("SignalStrength"), 
 								obj.getDouble("Latitude"), 
 								obj.getDouble("Longitude"),
 								obj.getString("DateDiscovered"),
-								obj.getInt("UserID"));
+								obj.getInt("UserID"));*/
 				markers.add(marker);
 			}
 		} catch(Exception e) {
@@ -70,30 +75,21 @@ public class ServerConnection {
 
 	/**
 	 * PUSH
-	 * Pushes a new Wifi location to the web server
+	 * Pushes a new WifiConnection to the web server
 	 * 
-	 * @param wm - WifiMarker
+	 * @param connection - WifiConnection to push
 	 * @author Napon Taratan
 	 */
-	public void pushNewLocation(WifiMarker wm){
-		
-		String ssid = wm.getSSID();
-		int sigStrength = wm.getSignalStrength();
-		String dateDiscovered = wm.getDate().toString();
-		int user = wm.getClientId();
-		double lat = wm.getLocation().latitude;
-		double lon = wm.getLocation().longitude;
-		
-		String url = WEBSERVER + "add_location.php?ssid=" + ssid + 
-												"&signal=" + sigStrength +
-												"&lat=" + lat +
-												"&lon=" + lon +
-												"&user=" + user +
-												"&date=" + dateDiscovered;
-		
-		String response = makeJSONQuery(url);
+	public void pushNewConnection(WifiConnection connection) {
+		String response = makeJSONQuery(
+			WEBSERVER + "add_location.php?ssid=" + connection.ssid +
+			"&signal=" + connection.strength +
+			"&lat=" + connection.location.latitude +
+			"&lon=" + connection.location.longitude +
+			"&user=" + connection.clientId +
+			"%date=" + connection.date
+		);
 		System.out.println(response);
-		
 	}
 	
 	/**
