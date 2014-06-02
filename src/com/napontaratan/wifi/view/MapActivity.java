@@ -1,10 +1,14 @@
 package com.napontaratan.wifi.view;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,10 +16,13 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,6 +42,7 @@ public class MapActivity extends Activity {
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 	private Location myLocation;
+	private final Context currentActivityContext = this;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +164,7 @@ public class MapActivity extends Activity {
 				String locationQuery = new String();
 				if(actionId ==  EditorInfo.IME_ACTION_DONE){ // user presses 'done' button
 					locationQuery = v.getText().toString();
+					new GeocodeTask(currentActivityContext).execute(locationQuery);
 				}
 				searchInput.setCursorVisible(false);
 				return false;
@@ -181,9 +190,80 @@ public class MapActivity extends Activity {
 				
 			}
 		});
-
-				
+			
 	}
+	
+	
+	
+	/**
+	 * Geocode address using Google Geocoding API
+	 * @author daniel
+	 */
+	private class GeocodeTask extends AsyncTask<String, Void, List<Address>> {
+
+		private ProgressDialog dialog;
+		
+		public GeocodeTask(Context cxt) {
+			dialog = new ProgressDialog(cxt);
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.setMessage("Retrieving Wifi Location");
+			dialog.show();
+		}
+		
+		@Override
+		protected List<Address> doInBackground(String... locationName) {
+			Geocoder geocoder = new Geocoder(getApplicationContext());
+			List<Address> addresses = new ArrayList<Address>();
+			try {
+				addresses = geocoder.getFromLocationName(locationName[0], 5);
+			} catch (IOException e) {
+				System.out.println("Error making Geocode api call");
+				e.printStackTrace();
+			}
+			return addresses;
+		}
+		
+		@Override
+		protected void onPostExecute(List <Address> addresses) {
+			if(addresses.size() == 0) {
+				Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_LONG).show();
+			}
+			
+			System.out.println("number of address: " + addresses.size());
+			// clear existing markers
+			map.clear();
+			
+			List<String> addressesStrings = new ArrayList<String>();
+			for(Address address: addresses) {
+				
+				LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+				int index = 0;
+				String addressText = "";
+				int addressLineLastIndex = address.getMaxAddressLineIndex();
+				while(address.getAddressLine(index) != null) {
+				
+					addressText += (index != addressLineLastIndex) ? (address.getAddressLine(index) + ", ") 
+								: (address.getAddressLine(index));
+					if(!addressText.equals("")) {
+						addressesStrings.add(addressText);
+					}
+					index ++;
+				}
+				System.out.println("address: " + addressText);
+			}
+			
+			
+			dialog.dismiss();
+			
+		}
+		
+	}
+	
+	
+	
 	
 	
 	
