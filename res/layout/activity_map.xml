@@ -8,65 +8,100 @@
             android:name="com.google.android.gms.maps.MapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
- 	</fragment>								
+ 	</fragment>			
  	
-    <LinearLayout
-        android:id="@+id/searchResultLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
-        android:layout_gravity="top"
-        android:layout_marginTop="15dip"
-        android:layout_marginLeft="15dip"
-        android:layout_marginRight="15dip"
-        android:background="@color/white"
-        android:orientation="horizontal">
-        
-        <ImageButton 
-            android:id="@+id/search_button"
-            android:layout_width="wrap_content"
-            android:layout_height="40dip"
-            android:background="@drawable/button_pressed_background"
-            android:paddingTop="5dip"
-            android:paddingBottom="5dip"
-            android:paddingLeft="10dip"
-            android:paddingRight="10dip"
-            android:src="@drawable/search_icon"
-            android:contentDescription="@string/search_button_description"/>
-        
-        <EditText 
-            android:id="@+id/search_query"
-            android:layout_weight="1"
-            android:layout_width="0dip"
-            android:layout_height="40dip"
-            android:background="@color/white"
-            android:paddingTop="5dip"
-            android:paddingBottom="5dip"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
-            android:cursorVisible="false"
-            android:singleLine="true"
-            android:hint="@string/seach_query_hint"/>
-        
-        <TextView 
-            android:layout_width="1dip"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
-            android:background="@color/black">
-        </TextView>
-        
-        <ImageButton 
-            android:id="@+id/clear_button"
-            android:layout_width="wrap_content"
-            android:layout_height="40dip"
-            android:background="@drawable/button_pressed_background"
-            android:src="@drawable/clear_icon"
-            android:paddingTop="5dip"
-            android:paddingBottom="5dip"
-            android:paddingLeft="5dip"
-            android:paddingRight="10dip"/>
-        
-    </LinearLayout>
-    
+	<RelativeLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:background="@color/white"
+	    android:visibility="gone"></RelativeLayout>
+ 	
+ 	<RelativeLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent">
+	    
+ 	    <LinearLayout
+ 	        android:id="@+id/searchResultLayout"
+ 	        android:layout_width="match_parent"
+ 	        android:layout_height="wrap_content"
+ 	        android:layout_gravity="top"
+ 	        android:layout_marginLeft="15dip"
+ 	        android:layout_marginRight="15dip"
+ 	        android:layout_marginTop="15dip"
+ 	        android:background="@color/white"
+ 	        android:orientation="horizontal" >
+
+ 	        <ImageButton
+ 	            android:id="@+id/search_button"
+ 	            android:layout_width="wrap_content"
+ 	            android:layout_height="40dip"
+ 	            android:background="@drawable/button_pressed_background"
+ 	            android:contentDescription="@string/search_button_description"
+ 	            android:paddingBottom="5dip"
+ 	            android:paddingLeft="10dip"
+ 	            android:paddingRight="10dip"
+ 	            android:paddingTop="5dip"
+ 	            android:src="@drawable/search_icon" />
+
+ 	        <EditText
+ 	            android:id="@+id/search_query"
+ 	            android:layout_width="0dip"
+ 	            android:layout_height="40dip"
+ 	            android:layout_weight="1"
+ 	            android:background="@color/white"
+ 	            android:cursorVisible="false"
+ 	            android:hint="@string/seach_query_hint"
+ 	            android:paddingBottom="5dip"
+ 	            android:paddingLeft="20dip"
+ 	            android:paddingRight="20dip"
+ 	            android:paddingTop="5dip"
+ 	            android:singleLine="true" />
+
+ 	        <TextView
+ 	            android:layout_width="1dip"
+ 	            android:layout_height="wrap_content"
+ 	            android:background="@color/black"
+ 	            android:paddingLeft="10dip" >
+ 	        </TextView>
+
+ 	        <ImageButton
+ 	            android:id="@+id/clear_button"
+ 	            android:layout_width="wrap_content"
+ 	            android:layout_height="40dip"
+ 	            android:background="@drawable/button_pressed_background"
+ 	            android:paddingBottom="5dip"
+ 	            android:paddingLeft="5dip"
+ 	            android:paddingRight="10dip"
+ 	            android:paddingTop="5dip"
+ 	            android:src="@drawable/clear_icon" />
+ 	    </LinearLayout>
+ 	    
+ 	    <ListView
+ 	        android:id="@+id/search_result_list"
+ 	        android:layout_width="match_parent"
+ 	        android:layout_height="wrap_content"
+ 	        android:layout_marginLeft="15dip"
+ 	        android:layout_marginRight="15dip"
+ 	        android:layout_marginTop="70dip"
+ 	        android:layout_marginBottom="25dip"
+ 	        android:background="@color/white"
+ 	        android:visibility="gone"
+ 	         >
+
+ 	    </ListView>
+ 	    
+	</RelativeLayout>
+		
+   
+
+    <ImageButton
+        android:id="@+id/current_location_button"
+        android:layout_width="35dip"
+        android:layout_height="35dip"
+        android:layout_gravity="bottom|right"
+        android:background="@drawable/button_pressed_background"
+        android:layout_margin="10dip" 
+        android:src="@drawable/get_current_location_icon"/>
 	
 </FrameLayout>
 

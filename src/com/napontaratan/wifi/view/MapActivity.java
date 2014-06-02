@@ -51,6 +51,9 @@ public class MapActivity extends Activity {
 		if(map == null) {
 			System.out.println("map is null, setting it up");
 			map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+			// hide zoom control so that it doesn't overlap the get current location button 
+			// user can still zoom using pinch/release gesture
+			map.getUiSettings().setZoomControlsEnabled(false); 
 		}	
 
 		map.moveCamera(CameraUpdateFactory.newLatLng(VANCOUVER));
