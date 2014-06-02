@@ -7,6 +7,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,6 +40,7 @@ public class MapActivity extends Activity {
 		setContentView(R.layout.activity_map);
 
 		setUpMap();
+		setUpSearch();
 	}
 
 	/**
@@ -85,7 +94,7 @@ public class MapActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			dialog.setMessage("Retrieving WiFi locations...");
-			dialog.show();
+			dialog.show(); 
 		}
 
 		// create web request and parse the response
@@ -109,4 +118,58 @@ public class MapActivity extends Activity {
 			dialog.dismiss();
 		}
 	}
+	
+	/**
+	 * Set up Buttons, Input event handler
+	 * @author daniel
+	 */
+	private void setUpSearch() {
+		// Search query input 
+		final EditText searchInput = (EditText) findViewById(R.id.search_query);
+		searchInput.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				searchInput.setCursorVisible(true);
+			}
+		});
+		// Search button 
+		ImageButton searchButton = (ImageButton) findViewById(R.id.search_button);
+		searchButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				searchInput.setCursorVisible(true);
+			}
+		});
+		// handle keyboard actions
+		searchInput.setOnEditorActionListener(new OnEditorActionListener() {
+
+			@Override
+			public boolean onEditorAction(TextView v, int actionId,
+					KeyEvent event) {
+				String locationQuery = new String();
+				if(actionId ==  EditorInfo.IME_ACTION_DONE){ // user presses 'done' button
+					locationQuery = v.getText().toString();
+				}
+				searchInput.setCursorVisible(false);
+				return false;
+			}
+		});
+		// Clear button
+		ImageButton clearSearch = (ImageButton) findViewById(R.id.clear_button);
+		clearSearch.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				searchInput.setText("");
+			}
+		});
+
+				
+	}
+	
+	
+	
+	
 }
