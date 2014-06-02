@@ -5,6 +5,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -33,6 +34,7 @@ public class MapActivity extends Activity {
 	
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
+	private Location myLocation;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -166,6 +168,17 @@ public class MapActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				searchInput.setText("");
+			}
+		});
+		// Get current Location button 
+		ImageButton getCurrentLocation = (ImageButton) findViewById(R.id.current_location_button);
+		getCurrentLocation.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Sunny: implement get current location functionality
+				myLocation = null;
+				
 			}
 		});
 
