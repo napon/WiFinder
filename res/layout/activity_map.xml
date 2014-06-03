@@ -88,21 +88,9 @@
  	        android:background="@color/white"
  	        android:visibility="gone"
  	         >
-
  	    </ListView>
  	    
 	</RelativeLayout>
 		
-   
-
-    <ImageButton
-        android:id="@+id/current_location_button"
-        android:layout_width="35dip"
-        android:layout_height="35dip"
-        android:layout_gravity="bottom|right"
-        android:background="@drawable/button_pressed_background"
-        android:layout_margin="10dip" 
-        android:src="@drawable/get_current_location_icon"/>
-	
 </FrameLayout>
 

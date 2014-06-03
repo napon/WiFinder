@@ -20,12 +20,14 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -64,6 +66,26 @@ public class MapActivity extends Activity {
 			// hide zoom control so that it doesn't overlap the get current location button 
 			// user can still zoom using pinch/release gesture
 			map.getUiSettings().setZoomControlsEnabled(false); 
+			map.setMyLocationEnabled(true);
+			
+			// Get the button view 
+		    View locationButton = getFragmentManager().findFragmentById(R.id.map).getView().findViewById(0x2);
+
+		    // and next place it, for exemple, on bottom right (as Google Maps app)
+		    RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+		    // position on right bottom
+		    rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+		    rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+		    rlp.setMargins(0, 0, 30, 30);
+		    
+		    map.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener() {
+				
+				@Override
+				public boolean onMyLocationButtonClick() {
+					// TODO Sunny: implement location functionality 
+					return false;
+				}
+			});
 		}	
 
 		map.moveCamera(CameraUpdateFactory.newLatLng(VANCOUVER));
@@ -178,19 +200,7 @@ public class MapActivity extends Activity {
 			public void onClick(View v) {
 				searchInput.setText("");
 			}
-		});
-		// Get current Location button 
-		ImageButton getCurrentLocation = (ImageButton) findViewById(R.id.current_location_button);
-		getCurrentLocation.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Sunny: implement get current location functionality
-				myLocation = null;
-				
-			}
-		});
-			
+		});			
 	}
 	
 	
@@ -255,6 +265,13 @@ public class MapActivity extends Activity {
 				System.out.println("address: " + addressText);
 			}
 			
+			ListView searchResultListView = (ListView) findViewById(R.id.search_result_list);
+			searchResultListView.setAdapter(new ArrayAdapter<String>(currentActivityContext, R.layout.search_result_item, addressesStrings));
+			// show/hide result layout (white background, listview, current location button) on back button, on search againsch
+			// cleanup naming convention 
+			// implement custom array adapter		
+			
+
 			
 			dialog.dismiss();
 			
