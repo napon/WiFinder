@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -58,5 +59,23 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 		db.insert(TABLE_NAME, null, values);
 		db.close();
 
+	}
+	
+	/**
+	 * Return true if OfflineWifiDB is empty
+	 * @author Napon Taratan
+	 */
+	public boolean isEmpty() {
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+		return cursor.getCount() == 0;
+	}
+	
+	/**
+	 * TODO : Delete an item from database
+	 * @author Napon Taratan
+	 */
+	public void deleteFromDB(Void lolcats) {
+		//TODO
 	}
 }
