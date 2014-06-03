@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -69,9 +70,9 @@ public class MapActivity extends Activity {
 			map.setMyLocationEnabled(true);
 			
 			// Get the button view 
+			// http://blog.kozaxinan.com/2013/08/how-to-change-position-of.html
 		    View locationButton = getFragmentManager().findFragmentById(R.id.map).getView().findViewById(0x2);
-
-		    // and next place it, for exemple, on bottom right (as Google Maps app)
+		    // and next place it, for exemple, on bottom right (in Google Maps app)
 		    RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
 		    // position on right bottom
 		    rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
@@ -175,6 +176,10 @@ public class MapActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				searchInput.setCursorVisible(true);
+				// bring up keyboard 
+				// http://stackoverflow.com/questions/5105354/how-to-show-soft-keyboard-when-edittext-is-focused
+				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.showSoftInput(searchInput, InputMethodManager.SHOW_IMPLICIT);
 			}
 		});
 		// handle keyboard actions
@@ -193,8 +198,8 @@ public class MapActivity extends Activity {
 			}
 		});
 		// Clear button
-		ImageButton clearSearch = (ImageButton) findViewById(R.id.clear_button);
-		clearSearch.setOnClickListener(new OnClickListener() {
+		ImageButton clearSearchButon = (ImageButton) findViewById(R.id.clear_button);
+		clearSearchButon.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -207,6 +212,7 @@ public class MapActivity extends Activity {
 	
 	/**
 	 * Geocode address using Google Geocoding API
+	 * reference: http://wptrafficanalyzer.in/blog/android-geocoding-showing-user-input-location-on-google-map-android-api-v2/
 	 * @author daniel
 	 */
 	private class GeocodeTask extends AsyncTask<String, Void, List<Address>> {
@@ -268,7 +274,6 @@ public class MapActivity extends Activity {
 			ListView searchResultListView = (ListView) findViewById(R.id.search_result_list);
 			searchResultListView.setAdapter(new ArrayAdapter<String>(currentActivityContext, R.layout.search_result_item, addressesStrings));
 			// show/hide result layout (white background, listview, current location button) on back button, on search againsch
-			// cleanup naming convention 
 			// implement custom array adapter		
 			
 
