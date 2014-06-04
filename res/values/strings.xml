@@ -3,5 +3,7 @@
 
     <string name="app_name">WiFinder</string>
     <string name="action_settings">Settings</string>
+    <string name="seach_query_hint">Search Wifi Location</string>
+    <string name="search_button_description">Search for Free Wifi</string>
 
 </resources>

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -65,32 +66,21 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 	}
 	
-	// I need methods like the following. - Kurt
 	/**
-	 * Temporary method.
-	 * @return True if no entry exists.
-	 * @author Kurt Ahn
+	 * Return true if OfflineWifiDB is empty
+	 * @author Napon Taratan
 	 */
 	public boolean isEmpty() {
-		return false;
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+		return cursor.getCount() == 0;
 	}
 	
 	/**
-	 * Temporary method.
-	 * @return Either newest or oldest entry if there's any.
-	 * @author Kurt Ahn
+	 * TODO : Delete an item from database
+	 * @author Napon Taratan
 	 */
-	public WifiConnection next() {
-		return null;
-	}
-	
-	/**
-	 * Temporary method.
-	 * Removes a WifiConnection object.
-	 * @param connection - Connection data to remove.
-	 * @author Kurt Ahn
-	 */
-	public void remove(WifiConnection connection) {
-		
+	public void deleteFromDB(Void lolcats) {
+		//TODO
 	}
 }

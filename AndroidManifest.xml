@@ -20,6 +20,10 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
+    <!-- Permissions for My Location Layer -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <!-- Google Maps uses OpenGL ES Version 2.0 - Napon -->
     <uses-feature
         android:glEsVersion="0x00020000"
@@ -47,23 +51,18 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.napontaratan.wifi.controller.WifiScanner">
+       <!--  <receiver android:name="com.napontaratan.wifi.controller.WifiScanner" >
             <intent-filter>
-                <action android:name="android.net.wifi.STATE_CHANGE"/>
-            	<action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-            	<!--
-            	TODO:
-            	    Add action for location change.
-            	-->
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+        <receiver android:name="com.napontaratan.wifi.controller.WifiProcessor" >
+            <intent-filter>
+                <action android:name="android.net.wifi.SCAN_RESULTS" />
+            </intent-filter>
+        </receiver> -->
         
-        <receiver android:name="com.napontaratan.wifi.controller.WifiProcessor">
-            <intent-filter>
-                <action android:name="android.net.wifi.SCAN_RESULTS"/>
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>

@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
 
@@ -23,9 +24,6 @@ import com.napontaratan.wifi.model.WifiMarker;
  * @author Napon Taratan
  */
 public class ServerConnection {
-	/*
-	 * TODO FIX parseJSONLocationData()!!!!!
-	 */
 	
 	private static ServerConnection instance = null;
 	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/";
@@ -58,14 +56,11 @@ public class ServerConnection {
 			JSONArray jsArray	= new JSONArray(raw);
 			for(int i = 0; i < jsArray.length(); i++) {
 				JSONObject obj = (JSONObject) jsArray.get(i);
-				WifiMarker marker = null; // WAT DOo??
-						/*new WifiMarker(
+				WifiMarker marker = new WifiMarker(
 								obj.getString("Name"), 
-								obj.getInt("SignalStrength"), 
-								obj.getDouble("Latitude"), 
-								obj.getDouble("Longitude"),
-								obj.getString("DateDiscovered"),
-								obj.getInt("UserID"));*/
+								"", 
+								new LatLng(obj.getDouble("Latitude"), 
+								obj.getDouble("Longitude")));
 				markers.add(marker);
 			}
 		} catch(Exception e) {
