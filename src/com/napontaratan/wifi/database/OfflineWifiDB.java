@@ -49,7 +49,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	 * Add a WifiMarker object to the DB
 	 * @author Napon Taratan
 	 */
-	public void addToDB(WifiConnection connection) {
+	public void add(WifiConnection connection) {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = new ContentValues();
@@ -67,6 +67,23 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	}
 	
 	/**
+	 * TODO : Delete an item from database
+	 * @param connection
+	 * @author Napon Taratan
+	 */
+	public void remove(WifiConnection connection) {
+		//TODO
+	}
+	
+	/**
+	 * 
+	 * @return Next entry. I don't care which one.
+	 */
+	public WifiConnection next() {
+		return null;
+	}
+	
+	/**
 	 * Return true if OfflineWifiDB is empty
 	 * @author Napon Taratan
 	 */
@@ -74,13 +91,5 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
 		return cursor.getCount() == 0;
-	}
-	
-	/**
-	 * TODO : Delete an item from database
-	 * @author Napon Taratan
-	 */
-	public void deleteFromDB(Void lolcats) {
-		//TODO
 	}
 }

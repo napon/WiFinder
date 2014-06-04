@@ -35,6 +35,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.napontaratan.wifi.R;
 import com.napontaratan.wifi.controller.ServerConnection;
+import com.napontaratan.wifi.controller.ServerConnectionFailureException;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
@@ -160,8 +161,12 @@ public class MapActivity extends Activity {
 		@Override
 		protected Void doInBackground(String ...s) {
 			String url = connection.WEBSERVER + "locations.php?lat=49.263604&lon=-123.247805&rad=3"; // sample code for the time being
-			String jsonResponse = connection.makeJSONQuery(url);
-			connection.parseJSONLocationData(jsonResponse);
+			try {
+				connection.parseJSONLocationData(
+						connection.makeJSONQuery(url));
+			} catch (ServerConnectionFailureException e) {
+				e.printStackTrace();
+			}
 			return null;
 		}
 

@@ -1,9 +1,11 @@
 package com.napontaratan.wifi.controller;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +76,10 @@ public class ServerConnection {
 	 * 
 	 * @param connection - WifiConnection to push
 	 * @author Napon Taratan
+	 * @throws ServerConnectionFailureException 
 	 */
-	public void pushNewConnection(WifiConnection connection) {
+	public void pushNewConnection(WifiConnection connection) 
+			throws ServerConnectionFailureException {
 		String response = makeJSONQuery(
 			WEBSERVER + "add_location.php?ssid=" + connection.ssid +
 			"&signal=" + connection.strength +
@@ -92,21 +96,49 @@ public class ServerConnection {
 	 * 
 	 * @param server - url of request
 	 * @author Napon Taratan
+	 * @throws ServerConnectionFailureException 
 	 */
-	public String makeJSONQuery(String server) {
+	public String makeJSONQuery(String server) 
+			throws ServerConnectionFailureException {
+		URL url = null;
+		HttpURLConnection client = null;
+		
+		
 		try {
+			url = new URL(server);
 			System.out.println("make JSON query to server");
-			URL url = new URL(server);
-			HttpURLConnection client = (HttpURLConnection) url.openConnection();
-			InputStream in = client.getInputStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String returnString = br.readLine();
-			client.disconnect();
-			System.out.println("return is " + returnString);
-			return returnString;
-		} catch (Exception e) {
-			e.printStackTrace();
+			client = (HttpURLConnection) url.openConnection();
+		} catch (MalformedURLException e) {
+			throw new ServerConnectionFailureException(
+					"Server address '" + server + "' is not valid.");
+		} catch (IOException e) {
+			throw new ServerConnectionFailureException(
+					"Failed to connection to '" + server + "'.");
 		}
-		return null;
+		
+		InputStream in = null;
+		BufferedReader br = null;
+		
+		try {
+			in = client.getInputStream();
+			br = new BufferedReader(
+					new InputStreamReader(in));
+			String r = br.readLine();
+			System.out.println(
+					"Return: " + r);
+			return r;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			client.disconnect();
+			
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return "";
 	}
 }

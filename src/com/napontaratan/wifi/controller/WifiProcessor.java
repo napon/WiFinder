@@ -45,26 +45,37 @@ public class WifiProcessor extends BroadcastReceiver {
 		Date date = new Date(0); // Temporary
 		int clientId = 0; // Where do we get this stuff??
 		
-		ServerConnection server = null;
-		if (manager.getConnectionInfo() != null && /*Has internet?*/
-				(server = ServerConnection.getInstance()) != null /*Connected to server?*/) {
+		ServerConnection server = ServerConnection.getInstance();
+		if (manager.getConnectionInfo() != null /*Has internet?*/) {
 			for (ScanResult s : scans) {
 				// Create WifiConnection object based on scan.
 				WifiConnection c = new WifiConnection(
 						s, location, date, clientId);
 				
 				// Send data directly to server.
-				server.pushNewConnection(c);
+				try {
+					server.pushNewConnection(c);
+				} catch (ServerConnectionFailureException e) {
+					System.err.println(
+							"Failed to connect to server." +
+							"Writing to database instead.");
+					e.printStackTrace();
+					database.add(c);
+				}
 			}
 			
 			while (!database.isEmpty()) {
-				WifiConnection next = database.next();
-				
 				// Send WifiConnection object to server.
-				server.pushNewConnection(next);
-				
-				// Remove object from buffer.
-				database.remove(next);
+				try {
+					WifiConnection next = database.next();
+					server.pushNewConnection(next);
+					database.remove(next);
+				} catch (ServerConnectionFailureException e) {
+					System.err.println(
+							"Failed to connect to server." +
+							"Connection data remains in database.");
+					e.printStackTrace();
+				}
 			}
 		} else {
 			for (ScanResult s : scans) {
@@ -73,7 +84,7 @@ public class WifiProcessor extends BroadcastReceiver {
 						s, location, date, clientId);
 				
 				// Push object to database.
-				database.addToDB(c);
+				database.add(c);
 			}
 		}
 	}
