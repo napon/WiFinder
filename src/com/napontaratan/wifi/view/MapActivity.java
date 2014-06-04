@@ -125,12 +125,11 @@ public class MapActivity extends Activity {
 	 * @author Napon Taratan
 	 */
 	private void plotMarker(WifiMarker marker) {
-		//map.addMarker(new MarkerOptions()
-		//.position(new LatLng(
-		//		marker.getLocation().latitude,
-		//		marker.getLocation().longitude))
-		//		.title("SSID: " + marker.getSSID())
-		//		.snippet("Signal Strength: " + marker.getSignalStrength()));
+		map.addMarker(new MarkerOptions()
+				.position(new LatLng(
+				marker.getLocation().latitude,
+				marker.getLocation().longitude))
+				.title("SSID: " + marker.getSSID()));
 	}
 
 	/**
