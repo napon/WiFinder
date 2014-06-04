@@ -15,7 +15,12 @@ import com.napontaratan.wifi.model.WifiMarker;
  * @author Napon Taratan
  */
 public class OfflineWifiDB extends SQLiteOpenHelper {
-
+	/*
+	 * TODO Implement methods at the bottom.
+	 * 
+	 */
+	
+	
 	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_NAME = "OfflineWifiDB";
 
@@ -58,5 +63,34 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 		db.insert(TABLE_NAME, null, values);
 		db.close();
 
+	}
+	
+	// I need methods like the following. - Kurt
+	/**
+	 * Temporary method.
+	 * @return True if no entry exists.
+	 * @author Kurt Ahn
+	 */
+	public boolean isEmpty() {
+		return false;
+	}
+	
+	/**
+	 * Temporary method.
+	 * @return Either newest or oldest entry if there's any.
+	 * @author Kurt Ahn
+	 */
+	public WifiConnection next() {
+		return null;
+	}
+	
+	/**
+	 * Temporary method.
+	 * Removes a WifiConnection object.
+	 * @param connection - Connection data to remove.
+	 * @author Kurt Ahn
+	 */
+	public void remove(WifiConnection connection) {
+		
 	}
 }
