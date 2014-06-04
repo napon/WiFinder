@@ -41,29 +41,32 @@ public class WifiProcessor extends BroadcastReceiver {
 				Context.WIFI_SERVICE);
 		
 		List<ScanResult> scans = manager.getScanResults();
-		LatLng location = null;
-		Date date = null;
+		LatLng location = new LatLng(100, 100); // Temporary
+		Date date = new Date(0); // Temporary
 		int clientId = 0; // Where do we get this stuff??
 		
-		if (manager.getConnectionInfo() != null /*connected?*/
-				/*&& succeeded to connect to server?*/) {
-			
+		ServerConnection server = null;
+		if (manager.getConnectionInfo() != null && /*Has internet?*/
+				(server = ServerConnection.getInstance()) != null /*Connected to server?*/) {
 			for (ScanResult s : scans) {
 				// Create WifiConnection object based on scan.
 				WifiConnection c = new WifiConnection(
 						s, location, date, clientId);
 				
 				// Send data directly to server.
-				ServerConnection.getInstance().pushNewConnection(c);
+				server.pushNewConnection(c);
 			}
 			
-			{	// WHILE database is not empty,
+			while (!database.isEmpty()) {
+				WifiConnection next = database.next();
 				
 				// Send WifiConnection object to server.
+				server.pushNewConnection(next);
+				
 				// Remove object from buffer.
+				database.remove(next);
 			}
-		} {	// ELSE,
-			
+		} else {
 			for (ScanResult s : scans) {
 				// Create WifiConnection object based on scan.
 				WifiConnection c = new WifiConnection(
