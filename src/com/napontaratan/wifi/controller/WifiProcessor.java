@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.provider.Settings.Secure;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.database.OfflineWifiDB;
@@ -43,7 +44,7 @@ public class WifiProcessor extends BroadcastReceiver {
 		List<ScanResult> scans = manager.getScanResults();
 		LatLng location = new LatLng(100, 100); // Temporary
 		Date date = new Date(0); // Temporary
-		int clientId = 0; // Where do we get this stuff??
+		String clientId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
 		
 		ServerConnection server = ServerConnection.getInstance();
 		if (manager.getConnectionInfo() != null /*Has internet?*/) {

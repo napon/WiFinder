@@ -13,6 +13,7 @@ import android.location.Location;
 import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings.Secure;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -118,6 +119,9 @@ public class MapActivity extends Activity {
 		map.animateCamera(CameraUpdateFactory.zoomTo(11));
 
 		new GetLocationsTask(this).execute();
+		
+		// Display the client ID when the map is loaded (for testing purposes)
+		Toast.makeText(getApplicationContext(), "Client ID: " + Secure.getString(this.getContentResolver(), Secure.ANDROID_ID), Toast.LENGTH_SHORT).show();
 	}
 
 	/**

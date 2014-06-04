@@ -50,7 +50,7 @@ public class WifiConnection {
 	/**
 	 * Unique ID given to the application's user.
 	 */
-	public final int clientId;
+	public final String clientId;
 	
 	/*
 	 * TODO: We need information about whether the connection is secured, etc.
@@ -68,7 +68,7 @@ public class WifiConnection {
 	 * @author Kurt Ahn
 	 */
 	public WifiConnection(
-			ScanResult scan, LatLng location, Date date, int clientId) {
+			ScanResult scan, LatLng location, Date date, String clientId) {
 		this.ssid = scan.SSID;
 		this.bssid = scan.BSSID;
 		this.strength = scan.level;
