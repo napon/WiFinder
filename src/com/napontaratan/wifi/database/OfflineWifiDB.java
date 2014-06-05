@@ -16,12 +16,7 @@ import com.napontaratan.wifi.model.WifiMarker;
  * @author Napon Taratan
  */
 public class OfflineWifiDB extends SQLiteOpenHelper {
-	/*
-	 * TODO Implement methods at the bottom.
-	 * 
-	 */
-	
-	
+
 	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_NAME = "OfflineWifiDB";
 
@@ -53,9 +48,9 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = new ContentValues();
-
+		
 		try {
-			values.put(KEY_DATA, WifiMarker.serialize(connection));
+			values.put(KEY_DATA, WifiConnection.serialize(connection));
 		} catch (IOException e) {
 			System.out.println("IOException caught in addToDB()");
 			e.printStackTrace();
@@ -77,10 +72,25 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	
 	/**
 	 * 
-	 * @return Next entry. I don't care which one.
+	 * @return Next entry.
+	 * @throws ClassNotFoundException 
+	 * @throws IOException 
 	 */
 	public WifiConnection next() {
-		return null;
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+		WifiConnection obj = null;
+		if (c.moveToNext()) {
+			try {
+				obj = (WifiConnection) WifiConnection.deserialize(c.getBlob(1));
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		} 
+		c.close();
+		return obj;
 	}
 	
 	/**
@@ -90,6 +100,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	public boolean isEmpty() {
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+		cursor.close();
 		return cursor.getCount() == 0;
 	}
 }

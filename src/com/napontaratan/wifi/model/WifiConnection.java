@@ -1,5 +1,10 @@
 package com.napontaratan.wifi.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Date;
 
 import android.net.wifi.ScanResult;
@@ -92,5 +97,37 @@ public class WifiConnection {
 			"Location: " + location.latitude + " "  + location.longitude + "\n" +
 			"Time: " + String.valueOf(date) + "\n" + 
 			"Client ID: " + clientId;
+	}
+	
+	// =========================== Database related stuff below ===============================
+	
+	/**
+	 * Convert a WifiMarker object into an array of Bytes to be stored into the Database
+	 * @param obj - (Object) WifiMarker object
+	 * @return byte[]
+	 * @throws IOException
+	 * 
+	 * @author Napon Taratan
+	 */
+	public static byte[] serialize(Object obj) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ObjectOutputStream os = new ObjectOutputStream(out);
+		os.writeObject(obj);
+		return out.toByteArray();
+	}
+	
+	/**
+	 * Convert an array of Bytes back to its object form
+	 * @param data - Data to deserialize
+	 * @return (Object) WifiMarker object
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * 
+	 * @author Napon Taratan
+	 */
+	public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+		ByteArrayInputStream in = new ByteArrayInputStream(data);
+		ObjectInputStream is = new ObjectInputStream(in);
+		return is.readObject();
 	}
 }
