@@ -13,6 +13,8 @@ import com.napontaratan.wifi.model.WifiMarker;
 
 /**
  * Offline database to store new WifiConnections waiting to be pushed to the remote server
+ * Implemented as a Queue
+ * 
  * @author Napon Taratan
  */
 public class OfflineWifiDB extends SQLiteOpenHelper {
@@ -30,7 +32,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		String CREATE_BUFFER_TABLE = "CREATE TABLE " + TABLE_NAME + " ( " + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_DATA + " BLOB )";
+		String CREATE_BUFFER_TABLE = "CREATE TABLE " + TABLE_NAME + " ( " + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_DATA + " BLOB )";
 		db.execSQL(CREATE_BUFFER_TABLE);
 	}
 
@@ -44,7 +46,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	 * Add a WifiMarker object to the DB
 	 * @author Napon Taratan
 	 */
-	public void add(WifiConnection connection) {
+	public void push(WifiConnection connection) {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = new ContentValues();
@@ -62,27 +64,20 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * TODO : Delete an item from database
-	 * @param connection
-	 * @author Napon Taratan
-	 */
-	public void remove(WifiConnection connection) {
-		//TODO
-	}
-	
-	/**
-	 * 
+	 * Return the first item from the DB and Delete it from the DB 
 	 * @return Next entry.
 	 * @throws ClassNotFoundException 
 	 * @throws IOException 
 	 */
-	public WifiConnection next() {
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+	public WifiConnection pop() {
+		SQLiteDatabase db = this.getWritableDatabase();
+		Cursor c = db.query(TABLE_NAME, null, null, null, null, null, null);
 		WifiConnection obj = null;
-		if (c.moveToNext()) {
+		if (c.moveToFirst()) {
 			try {
 				obj = (WifiConnection) WifiConnection.deserialize(c.getBlob(1));
+				String objId = c.getString(c.getColumnIndex(KEY_ID));
+				db.delete(TABLE_NAME, KEY_ID + "=?", new String[] {objId});
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
@@ -90,6 +85,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 			}
 		} 
 		c.close();
+		db.close();
 		return obj;
 	}
 	
@@ -100,7 +96,9 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 	public boolean isEmpty() {
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+		int count = cursor.getCount();
 		cursor.close();
-		return cursor.getCount() == 0;
+		db.close();
+		return count == 0;
 	}
 }

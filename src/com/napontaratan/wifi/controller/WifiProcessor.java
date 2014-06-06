@@ -61,16 +61,15 @@ public class WifiProcessor extends BroadcastReceiver {
 							"Failed to connect to server." +
 							"Writing to database instead.");
 					e.printStackTrace();
-					database.add(c);
+					database.push(c);
 				}
 			}
 			
 			while (!database.isEmpty()) {
 				// Send WifiConnection object to server.
 				try {
-					WifiConnection next = database.next();
+					WifiConnection next = database.pop();
 					server.pushNewConnection(next);
-					database.remove(next);
 				} catch (ServerConnectionFailureException e) {
 					System.err.println(
 							"Failed to connect to server." +
@@ -85,7 +84,7 @@ public class WifiProcessor extends BroadcastReceiver {
 						s, location, date, clientId);
 				
 				// Push object to database.
-				database.add(c);
+				database.push(c);
 			}
 		}
 	}

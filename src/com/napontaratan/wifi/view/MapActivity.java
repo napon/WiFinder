@@ -42,7 +42,7 @@ import com.napontaratan.wifi.model.WifiMarker;
 public class MapActivity extends Activity {
 	/*
 	 * TODO FIX plotMarker() !!!!!
-	 * TODO @PrestonChang: Fix the map around where user is in doInBackground()
+	 * TODO @PrestonChang: Fix the map around where user is in setupMap()
 	 */
 	
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
