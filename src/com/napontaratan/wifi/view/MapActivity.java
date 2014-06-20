@@ -10,7 +10,6 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
@@ -19,6 +18,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -35,8 +36,10 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.napontaratan.wifi.R;
+import com.napontaratan.wifi.controller.LocationServices;
 import com.napontaratan.wifi.controller.ServerConnection;
 import com.napontaratan.wifi.controller.ServerConnectionFailureException;
+import com.napontaratan.wifi.geocode.GeocodeService;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
@@ -48,10 +51,12 @@ public class MapActivity extends Activity {
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 	private MapFragment mapFragment;
-	private Location myLocation;
 	private final Context currentActivityContext = this; // to be used when the context changes (eg. in an event handler)
 	private EditText searchInput;
 	private ImageButton searchButton;
+	private LocationServices locationServices; 
+	private Location myLocation;
+	private LatLng myLatLng;
 
 
 	@Override
@@ -61,6 +66,7 @@ public class MapActivity extends Activity {
 		
 		setUpMap();
 		setUpSearch();
+		locationServices = new LocationServices(this);
 	}
 	
 	/**
@@ -69,9 +75,6 @@ public class MapActivity extends Activity {
 	 */
 	@Override
 	public void onBackPressed() {
-		if(!searchInput.getText().equals("")){
-			searchInput.setText("");
-		}
 		if(isResultOverlayShown()){
 			clearResultOverlay();
 		}else {
@@ -239,19 +242,20 @@ public class MapActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				searchInput.setText("");
+				clearResultOverlay();
 			}
 		});			
 	} // END OF SET UP SEARCH 
 	
 	/**
-	 * Geocode address using Google Geocoding API
+	 * Geocode address using Google Geocoding API, and plot nearby Wifi spots around the location on map
 	 * reference: http://wptrafficanalyzer.in/blog/android-geocoding-showing-user-input-location-on-google-map-android-api-v2/
 	 * @author daniel
 	 */
 	private class GeocodeTask extends AsyncTask<String, Void, List<Address>> {
 
 		private ProgressDialog dialog;
+		private GeocodeService geocodeService;
 		
 		public GeocodeTask(Context cxt) {
 			dialog = new ProgressDialog(cxt);
@@ -265,49 +269,21 @@ public class MapActivity extends Activity {
 		
 		@Override
 		protected List<Address> doInBackground(String... locationName) {
-			Geocoder geocoder = new Geocoder(getApplicationContext());
-			List<Address> addresses = new ArrayList<Address>();
-			try {
-				addresses = geocoder.getFromLocationName(locationName[0], 15);
-			} catch (IOException e) {
-				System.out.println("Error making Geocode api call");
-				e.printStackTrace();
-			}
-			return addresses;
+			// TODO: update implementation after confirmed geocoding algorithm
+			geocodeService = new GeocodeService(getApplicationContext());
+			return geocodeService.getAddresses(locationName[0]);
 		}
 		
 		@Override
-		protected void onPostExecute(List <Address> addresses) {
+		protected void onPostExecute(List<Address> addresses) {
+			// TODO: update implementation after confirmed geocoding algorithm
 			if(addresses.size() == 0) {
 				Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_LONG).show();
 			}
 			
-			System.out.println("number of address: " + addresses.size());
 			// clear existing markers
 			map.clear();
-			
-			List<String> addressesStrings = new ArrayList<String>();
-			for(Address address: addresses) {
-				
-				LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-				int index = 0;
-				String addressText = "";
-				int addressLineLastIndex = address.getMaxAddressLineIndex();
-				while(address.getAddressLine(index) != null) {
-				
-					addressText += (index != addressLineLastIndex) ? (address.getAddressLine(index) + ", ") 
-								: (address.getAddressLine(index));
-					index ++;
-				}
-				if(!addressText.equals("")) {
-					addressesStrings.add(addressText);
-				}
-				System.out.println("address: " + addressText);
-				System.out.println("latlng: " + address.getLatitude() + ", "  + address.getLongitude());
-			}
-			
-			displayWifiSpot(addressesStrings);
-			
+			displayWifiSpotMarkers(addresses, geocodeService);
 			dialog.dismiss();
 			
 		}
@@ -316,45 +292,74 @@ public class MapActivity extends Activity {
 	
 	
 	// Helper class(es)/method(s)
-	private class LocationArrayAdapter extends ArrayAdapter<String>{
-
-		public LocationArrayAdapter(Context context, int resource) {
-			super(context, resource);
-			// TODO decide on the type of custom array adapter
-		}
-		
-	}
-	
-	
-	private void displayWifiSpot(List<String> searchResult) {
+	/**
+	 * Plot Wifi markers on map 
+	 * @param addresses
+	 * @author daniel
+	 */
+	private void displayWifiSpotMarkers(List<Address> addresses, GeocodeService geocodeService) {
 		// if only 1 result, go directly to make the api call for wifi spots around it 
 		// else narrow it to 1 by displaying on list and letting user choose 
-
-		displaySearchResult(searchResult);
+		displaySearchResult(addresses, geocodeService);
+		//TODO getWifiLocation  using myLatLng
+		//TODO pushWifiLocation using myLatLng
 	}
 	
-	
-	private void displaySearchResult(List<String> resultsToDisplay) {
+	/**
+	 * Display formatted addresses from search results on list view 
+	 * @param addresses list of addresses
+	 * @author daniel
+	 */
+	private void displaySearchResult(final List<Address> addresses,  final GeocodeService geocodeService) {
+		List<String> addressesStrings = geocodeService.formatAddressToStrings(addresses);
+		// search result list view
 		ListView searchResultListView = (ListView) findViewById(R.id.search_result_list);
-		searchResultListView.setAdapter(new ArrayAdapter<String>(currentActivityContext, R.layout.search_result_item, resultsToDisplay));
-		// show/hide result layout (white background, listview, current location button) on back button, on search againsch
+		searchResultListView.setAdapter(new ArrayAdapter<String>(currentActivityContext, R.layout.search_result_item, addressesStrings));
+		searchResultListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> adpaterView, View view, int index,
+					long id) {
+				Address addressSelected = addresses.get(index);
+				myLatLng = new LatLng(addressSelected.getLatitude(), addressSelected.getLongitude());	
+			}
+		});
 		showResultOverlay();
 	}
-	
-	private void clearResultOverlay(){		
-		findViewById(R.id.search_background).setVisibility(View.GONE);
-		findViewById(R.id.search_result_list).setVisibility(View.GONE);
-		map.setMyLocationEnabled(true);
-	}
-	
+		
+	/**
+	 * helper method to show geocoded addresses on list view
+	 * @author daniel
+	 */
 	private void showResultOverlay(){
 		findViewById(R.id.search_background).setVisibility(View.VISIBLE);
 		findViewById(R.id.search_result_list).setVisibility(View.VISIBLE);
 		map.setMyLocationEnabled(false);
 	}
 	
+	/**
+	 * clear the list view
+	 * @author daniel
+	 */
+	private void clearResultOverlay(){		
+		if(!searchInput.getText().equals("")){
+			searchInput.setText("");
+		}
+		findViewById(R.id.search_background).setVisibility(View.GONE);
+		findViewById(R.id.search_result_list).setVisibility(View.GONE);
+		// TODO: clear result
+		map.setMyLocationEnabled(true);
+	}
+	
+	/**
+	 * determine if the list view containing geocoded addresses is currently visible
+	 * @return true if the list view containing geocoded adresses is shown, false otherwise
+	 * @author daniel
+	 */
 	private boolean isResultOverlayShown(){
-		return !map.isMyLocationEnabled() && (findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && (findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
+		return !map.isMyLocationEnabled() && 
+				(findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && 
+				(findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
 	}
 	
 	// =============== END OF SEARCH ===========================================
