@@ -7,6 +7,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -55,7 +56,6 @@ public class MapActivity extends Activity {
 	private EditText searchInput;
 	private ImageButton searchButton;
 	private LocationServices locationServices; 
-	private Location myLocation;
 	private LatLng myLatLng;
 
 
@@ -108,11 +108,24 @@ public class MapActivity extends Activity {
 		    rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
 		    rlp.setMargins(0, 0, 30, 30);
 		    
+		    // using my location
 		    map.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener() {
 				
 				@Override
 				public boolean onMyLocationButtonClick() {
-					// TODO Sunny: implement location functionality 
+					Location myLocation = locationServices.getLocation();
+					if(myLocation != null) {
+						myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+						new GetLocationsTask(currentActivityContext).execute(myLatLng);
+					} else {
+						Toast.makeText(currentActivityContext, R.string.my_location_unavailable_msg, Toast.LENGTH_LONG).show();
+						// open up location settings
+						// http://stackoverflow.com/questions/7713478/how-to-prompt-user-to-enable-gps-provider-and-or-network-provider
+						Intent gpsOptionsIntent = new Intent(  
+							    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);  
+						startActivity(gpsOptionsIntent);
+					}
+					
 					return false;
 				}
 			});
@@ -120,8 +133,6 @@ public class MapActivity extends Activity {
 
 		map.moveCamera(CameraUpdateFactory.newLatLng(VANCOUVER));
 		map.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-		new GetLocationsTask(this).execute();
 		
 		// Display the client ID when the map is loaded (for testing purposes)
 		Toast.makeText(getApplicationContext(), "Client ID: " + Secure.getString(this.getContentResolver(), Secure.ANDROID_ID), Toast.LENGTH_SHORT).show();
@@ -146,7 +157,7 @@ public class MapActivity extends Activity {
 	 * 
 	 * @author Napon Taratan
 	 */
-	private class GetLocationsTask extends AsyncTask<String, Void, Void>  {
+	private class GetLocationsTask extends AsyncTask<LatLng, Void, Void>  {
 
 		private ProgressDialog dialog;
 
@@ -166,8 +177,9 @@ public class MapActivity extends Activity {
 
 		// create web request and parse the response
 		@Override
-		protected Void doInBackground(String ...s) {
-			String url = connection.WEBSERVER + "locations.php?lat=49.263604&lon=-123.247805&rad=3"; // sample code for the time being
+		protected Void doInBackground(LatLng ...latLng) {
+//			String url = connection.WEBSERVER + "locations.php?lat=49.263604&lon=-123.247805&rad=3"; // sample code for the time being
+			String url = connection.WEBSERVER + "locations.php?lat=" + latLng[0].latitude + "&lon=" + latLng[0].longitude + "&rad=3";
 			try {
 				connection.parseJSONLocationData(
 						connection.makeJSONQuery(url));
@@ -248,7 +260,7 @@ public class MapActivity extends Activity {
 	} // END OF SET UP SEARCH 
 	
 	/**
-	 * Geocode address using Google Geocoding API, and plot nearby Wifi spots around the location on map
+	 * Geocode address using Google Geocoding API to get latitude longitude for wifi api call, and plot nearby Wifi spots around the location on map
 	 * reference: http://wptrafficanalyzer.in/blog/android-geocoding-showing-user-input-location-on-google-map-android-api-v2/
 	 * @author daniel
 	 */
@@ -279,6 +291,7 @@ public class MapActivity extends Activity {
 			// TODO: update implementation after confirmed geocoding algorithm
 			if(addresses.size() == 0) {
 				Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_LONG).show();
+				return;
 			}
 			
 			// clear existing markers
@@ -297,20 +310,8 @@ public class MapActivity extends Activity {
 	 * @param addresses
 	 * @author daniel
 	 */
-	private void displayWifiSpotMarkers(List<Address> addresses, GeocodeService geocodeService) {
-		// if only 1 result, go directly to make the api call for wifi spots around it 
-		// else narrow it to 1 by displaying on list and letting user choose 
-		displaySearchResult(addresses, geocodeService);
-		//TODO getWifiLocation  using myLatLng
-		//TODO pushWifiLocation using myLatLng
-	}
-	
-	/**
-	 * Display formatted addresses from search results on list view 
-	 * @param addresses list of addresses
-	 * @author daniel
-	 */
-	private void displaySearchResult(final List<Address> addresses,  final GeocodeService geocodeService) {
+	private void displayWifiSpotMarkers(final List<Address> addresses, GeocodeService geocodeService) {
+		// display formatted addresses from search results on list view 
 		List<String> addressesStrings = geocodeService.formatAddressToStrings(addresses);
 		// search result list view
 		ListView searchResultListView = (ListView) findViewById(R.id.search_result_list);
@@ -320,13 +321,19 @@ public class MapActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> adpaterView, View view, int index,
 					long id) {
+				// Sets the chosen location's latitude and longitude
 				Address addressSelected = addresses.get(index);
-				myLatLng = new LatLng(addressSelected.getLatitude(), addressSelected.getLongitude());	
+				myLatLng = new LatLng(addressSelected.getLatitude(), addressSelected.getLongitude());
+				// get wifi locations
+				new GetLocationsTask(currentActivityContext).execute(myLatLng);
+				clearResultOverlay();
+				//TODO pushWifiLocation using myLatLng
 			}
 		});
 		showResultOverlay();
+
 	}
-		
+	
 	/**
 	 * helper method to show geocoded addresses on list view
 	 * @author daniel
@@ -361,12 +368,6 @@ public class MapActivity extends Activity {
 				(findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && 
 				(findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
 	}
-	
 	// =============== END OF SEARCH ===========================================
-	
-	
-	
-	
-	
 	
 }
