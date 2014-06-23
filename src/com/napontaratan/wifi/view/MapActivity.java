@@ -281,14 +281,12 @@ public class MapActivity extends Activity {
 		
 		@Override
 		protected List<Address> doInBackground(String... locationName) {
-			// TODO: update implementation after confirmed geocoding algorithm
 			geocodeService = new GeocodeService(getApplicationContext());
 			return geocodeService.getAddresses(locationName[0]);
 		}
 		
 		@Override
 		protected void onPostExecute(List<Address> addresses) {
-			// TODO: update implementation after confirmed geocoding algorithm
 			if(addresses.size() == 0) {
 				Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_LONG).show();
 				return;
@@ -312,7 +310,7 @@ public class MapActivity extends Activity {
 	 */
 	private void displayWifiSpotMarkers(final List<Address> addresses, GeocodeService geocodeService) {
 		// display formatted addresses from search results on list view 
-		List<String> addressesStrings = geocodeService.formatAddressToStrings(addresses);
+		List<String> addressesStrings = geocodeService.formatAddressToStrings();
 		// search result list view
 		ListView searchResultListView = (ListView) findViewById(R.id.search_result_list);
 		searchResultListView.setAdapter(new ArrayAdapter<String>(currentActivityContext, R.layout.search_result_item, addressesStrings));
@@ -354,7 +352,6 @@ public class MapActivity extends Activity {
 		}
 		findViewById(R.id.search_background).setVisibility(View.GONE);
 		findViewById(R.id.search_result_list).setVisibility(View.GONE);
-		// TODO: clear result
 		map.setMyLocationEnabled(true);
 	}
 	
