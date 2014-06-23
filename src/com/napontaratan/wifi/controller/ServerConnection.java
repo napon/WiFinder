@@ -123,10 +123,15 @@ public class ServerConnection {
 			in = client.getInputStream();
 			br = new BufferedReader(
 					new InputStreamReader(in));
-			String r = br.readLine();
+			String current;
+			StringBuilder r = new StringBuilder();
 			System.out.println(
-					"Return: " + r);
-			return r;
+					"Return: ");
+			while ((current = br.readLine()) != null) { 
+				System.out.println(current);
+				r.append(current.trim());
+			}
+			return r.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
