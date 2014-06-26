@@ -1,19 +1,22 @@
 package com.napontaratan.wifi.controller;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
+import android.annotation.SuppressLint;
+import android.net.Uri;
+import android.net.http.HttpResponseCache;
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
@@ -98,16 +101,21 @@ public class ServerConnection {
 	 * @author Napon Taratan
 	 * @throws ServerConnectionFailureException 
 	 */
+	@SuppressLint("NewApi")
 	public String makeJSONQuery(String server) 
 			throws ServerConnectionFailureException {
 		URL url = null;
 		HttpURLConnection client = null;
 		
-		
 		try {
-			url = new URL(server);
+			url = new URL(server); 
 			System.out.println("make JSON query to server");
 			client = (HttpURLConnection) url.openConnection();
+			int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
+			client.addRequestProperty("Cache-Control", "max-stale=" + maxStale); // try get cache response
+//			System.out.println("cache request count: " + cache.getRequestCount());
+//			System.out.println("cache hit count: " + cache.getHitCount() );
+//			System.out.println("cache network count: "  + cache.getNetworkCount());
 		} catch (MalformedURLException e) {
 			throw new ServerConnectionFailureException(
 					"Server address '" + server + "' is not valid.");
@@ -119,14 +127,28 @@ public class ServerConnection {
 		InputStream in = null;
 		BufferedReader br = null;
 		
-		try {
+		try { 
 			in = client.getInputStream();
+		} catch (IOException e) {
+			// if no cache response or cache response fails
+			try {
+				client = (HttpURLConnection) url.openConnection();
+				client.addRequestProperty("Cache-Control", "max-age=0");
+				in = client.getInputStream();
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+			
+			e.printStackTrace();
+		}
+		
+		try {
+			
 			br = new BufferedReader(
 					new InputStreamReader(in));
 			String current;
 			StringBuilder r = new StringBuilder();
-			System.out.println(
-					"Return: ");
+			System.out.println("Return: ");
 			while ((current = br.readLine()) != null) { 
 				System.out.println(current);
 				r.append(current.trim());
@@ -134,9 +156,9 @@ public class ServerConnection {
 			return r.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
+		} 
+		finally {
 			client.disconnect();
-			
 			try {
 				br.close();
 			} catch (IOException e) {

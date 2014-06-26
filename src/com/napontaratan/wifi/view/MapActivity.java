@@ -1,17 +1,18 @@
 package com.napontaratan.wifi.view;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
-
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
+import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.view.KeyEvent;
@@ -29,7 +30,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
@@ -64,9 +64,21 @@ public class MapActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
 		
+		enableHttpResponseCache();
 		setUpMap();
 		setUpSearch();
 		locationServices = new LocationServices(this);
+	}
+	
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	protected void onStop() {
+		super.onStop();
+		// Flushing the cache forces its data to the filesystem. This ensures that all responses written to the cache will be readable the next time the activity starts.
+		HttpResponseCache cache = HttpResponseCache.getInstalled();
+		if(cache != null) {
+			cache.flush();
+		}
+		
 	}
 	
 	/**
@@ -364,6 +376,22 @@ public class MapActivity extends Activity {
 		return !map.isMyLocationEnabled() && 
 				(findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && 
 				(findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
+	}
+	
+	/**
+	 * Android 4.0 added a response cache to HttpURLConnection. You can enable HTTP response caching on supported devices using reflection as follows
+	 * http://developer.android.com/training/efficient-downloads/redundant_redundant.html
+	 */
+	private void enableHttpResponseCache() {
+		  try {
+		    long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+		    File httpCacheDir = new File(getCacheDir(), "http");
+		    Class.forName("android.net.http.HttpResponseCache")
+		         .getMethod("install", File.class, long.class)
+		         .invoke(null, httpCacheDir, httpCacheSize);
+		  } catch (Exception httpResponseCacheNotAvailable) {
+		    System.out.println("HTTP response cache is unavailable.");
+		  }
 	}
 	// =============== END OF SEARCH ===========================================
 	

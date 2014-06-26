@@ -21,7 +21,7 @@ import com.napontaratan.wifi.controller.ServerConnection;
 import com.napontaratan.wifi.controller.ServerConnectionFailureException;
 
 /**
- * Geocoding service using Google Geocoding API 
+ * Geocoding service using Client-side geocoding (Android Geocoder) and fall back on Server-side geocoding (Google Geocoding API) 
  * @author daniel
  * https://developers.google.com/maps/articles/geocodestrat
  */
@@ -50,7 +50,6 @@ public class GeocodeService {
 		//first try Android Geocoder
 		//fall back to Google Geocoding API
 		getAddressFromAndroidGeocoder(location);
-		addresses = null; // TODO: TESTING CLEAR THIS OUT
 		if(!hasAddress(addresses)) {
 			getAddressFromGoogleGeocodingAPI(location);
 		}
