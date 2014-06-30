@@ -60,7 +60,7 @@ public class OfflineWifiDB extends SQLiteOpenHelper {
 
 		db.insert(TABLE_NAME, null, values);
 		db.close();
-
+ 
 	}
 	
 	/**

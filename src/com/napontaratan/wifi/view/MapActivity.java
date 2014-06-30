@@ -8,9 +8,11 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Address;
 import android.location.Location;
 import android.net.http.HttpResponseCache;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,15 +42,13 @@ import com.napontaratan.wifi.R;
 import com.napontaratan.wifi.controller.LocationServices;
 import com.napontaratan.wifi.controller.ServerConnection;
 import com.napontaratan.wifi.controller.ServerConnectionFailureException;
+import com.napontaratan.wifi.controller.WifiProcessor;
+import com.napontaratan.wifi.controller.WifiScanner;
 import com.napontaratan.wifi.geocode.GeocodeService;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
-	/*
-	 * TODO FIX plotMarker() !!!!!
-	 * TODO @PrestonChang: Fix the map around where user is in setupMap()
-	 */
-	
+
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 	private MapFragment mapFragment;
@@ -57,7 +57,6 @@ public class MapActivity extends Activity {
 	private ImageButton searchButton;
 	private LocationServices locationServices; 
 	private LatLng myLatLng;
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +67,7 @@ public class MapActivity extends Activity {
 		setUpMap();
 		setUpSearch();
 		locationServices = new LocationServices(this);
+		registerReceivers();
 	}
 	
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -78,7 +78,23 @@ public class MapActivity extends Activity {
 		if(cache != null) {
 			cache.flush();
 		}
+	}
+	
+	/**
+	 * Register wifi scan and process receivers
+	 * @author Napon Taratan
+	 */
+	public void registerReceivers() {
+		System.out.println("checked");
+		WifiScanner wifiScanner = new WifiScanner();
+		IntentFilter onNewWifiDiscovered = new IntentFilter();
+		onNewWifiDiscovered.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
+		registerReceiver(wifiScanner, onNewWifiDiscovered);
 		
+		WifiProcessor wifiProcessor = new WifiProcessor();
+		IntentFilter onScanCompleted = new IntentFilter();
+		onScanCompleted.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+		registerReceiver(wifiProcessor, onScanCompleted);
 	}
 	
 	/**
@@ -190,7 +206,6 @@ public class MapActivity extends Activity {
 		// create web request and parse the response
 		@Override
 		protected Void doInBackground(LatLng ...latLng) {
-//			String url = connection.WEBSERVER + "locations.php?lat=49.263604&lon=-123.247805&rad=3"; // sample code for the time being
 			String url = connection.WEBSERVER + "locations.php?lat=" + latLng[0].latitude + "&lon=" + latLng[0].longitude + "&rad=3";
 			try {
 				connection.parseJSONLocationData(
