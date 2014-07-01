@@ -337,7 +337,6 @@ public class MapActivity extends Activity {
 				// get wifi locations
 				new GetLocationsTask(currentActivityContext).execute(myLatLng);
 				clearResultOverlay();
-				//TODO pushWifiLocation using myLatLng
 			}
 		});
 		showResultOverlay();
