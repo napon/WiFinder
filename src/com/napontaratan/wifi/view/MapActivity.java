@@ -70,14 +70,9 @@ public class MapActivity extends Activity {
 		registerReceivers();
 	}
 	
-	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	protected void onStop() {
 		super.onStop();
-		// Flushing the cache forces its data to the filesystem. This ensures that all responses written to the cache will be readable the next time the activity starts.
-		HttpResponseCache cache = HttpResponseCache.getInstalled();
-		if(cache != null) {
-			cache.flush();
-		}
+		flushHttpResponseCache();
 	}
 	
 	/**
@@ -406,6 +401,18 @@ public class MapActivity extends Activity {
 		  } catch (Exception httpResponseCacheNotAvailable) {
 		    System.out.println("HTTP response cache is unavailable.");
 		  }
+	}
+	
+	
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	private void flushHttpResponseCache() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			// Flushing the cache forces its data to the filesystem. This ensures that all responses written to the cache will be readable the next time the activity starts.
+			HttpResponseCache cache = HttpResponseCache.getInstalled();
+			if(cache != null) {
+				cache.flush();
+			}
+		}
 	}
 	// =============== END OF SEARCH ===========================================
 	

@@ -90,7 +90,7 @@ public class GeocodeService {
 		try {
 			queryUrl = GOOGLE_GEOCODE_ENDPOINT + "address=" + URLEncoder.encode(location, "UTF-8");
 			response = serverConnection.makeJSONQuery(queryUrl);
-			Log.d(DEBUG_TAG, response);
+			Log.d(DEBUG_TAG, response); 
 		} catch (UnsupportedEncodingException e) {
 			Log.d(DEBUG_TAG,"fail to encode");
 			e.printStackTrace();

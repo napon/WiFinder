@@ -1,5 +1,6 @@
 package com.napontaratan.wifi.controller;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,10 +11,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.http.HttpConnection;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -23,10 +25,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
+import android.os.Build;
 import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
@@ -138,86 +141,56 @@ public class ServerConnection {
 	 * @author Napon Taratan
 	 * @throws ServerConnectionFailureException 
 	 */
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public String makeJSONQuery(String server) throws ServerConnectionFailureException {
+//		String responseString = null;
+		HttpURLConnection urlConnection = null;
+		StringBuilder response = new StringBuilder();
 		
-		String responseString = null;
+		
+		try {
+			URL url = new URL(server);
+			urlConnection =  (HttpURLConnection) url.openConnection();
+			urlConnection.setUseCaches(true);
+			int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
+			urlConnection.addRequestProperty("Cache-Control", "max-stale=" + maxStale);
+			System.out.println("response message: " + urlConnection.getResponseMessage());
+			System.out.println("header field: " + urlConnection.getHeaderFields());
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+				HttpResponseCache cache = HttpResponseCache.getInstalled();
+				System.out.println("cache request count: " + cache.getRequestCount());
+				System.out.println("cache hit count: " + cache.getHitCount() );
+				System.out.println("cache network count: "  + cache.getNetworkCount());
+			}			
+			BufferedReader r = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+			String line;
+			while ((line = r.readLine()) != null) {
+				response.append(line);
+			}
+			r.close();
+			
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			urlConnection.disconnect();;
+		}
+		return response.toString();
         
-        try {
-            System.out.println("make JSON query to server \n " + server);
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpResponse response = httpClient.execute(new HttpGet(server));
-            responseString = new BasicResponseHandler().handleResponse(response);
-            System.out.println(responseString);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ServerConnectionFailureException();
-        }
+//        try {
+//            System.out.println("make JSON query to server \n " + server);
+//            HttpClient httpClient = new DefaultHttpClient();
+//            HttpGet httpGet = new HttpGet(server);
+//            HttpResponse response = httpClient.execute(new HttpGet(server));
+//            responseString = new BasicResponseHandler().handleResponse(response);
+//            System.out.println(responseString);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new ServerConnectionFailureException();
+//        }
 
-        return responseString;
-//			throws ServerConnectionFailureException {
-//		URL url = null;
-//		HttpURLConnection client = null;
-//		
-//		try {
-//			url = new URL(server); 
-//			System.out.println("make JSON query to server");
-//			client = (HttpURLConnection) url.openConnection();
-//			int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
-//			client.addRequestProperty("Cache-Control", "max-stale=" + maxStale); // try get cache response
-////			System.out.println("cache request count: " + cache.getRequestCount());
-////			System.out.println("cache hit count: " + cache.getHitCount() );
-////			System.out.println("cache network count: "  + cache.getNetworkCount());
-//		} catch (MalformedURLException e) {
-//			throw new ServerConnectionFailureException(
-//					"Server address '" + server + "' is not valid.");
-//		} catch (IOException e) {
-//			throw new ServerConnectionFailureException(
-//					"Failed to connection to '" + server + "'.");
-//		}
-//		
-//		InputStream in = null;
-//		BufferedReader br = null;
-//		
-//		try { 
-//			in = client.getInputStream();
-//		} catch (IOException e) {
-//			// if no cache response or cache response fails
-//			try {
-//				client = (HttpURLConnection) url.openConnection();
-//				client.addRequestProperty("Cache-Control", "max-age=0");
-//				in = client.getInputStream();
-//			} catch (IOException ioe) {
-//				ioe.printStackTrace();
-//			}
-//			
-//			e.printStackTrace();
-//		}
-//		
-//		try {
-//			
-//			br = new BufferedReader(
-//					new InputStreamReader(in));
-//			String current;
-//			StringBuilder r = new StringBuilder();
-//			System.out.println("Return: ");
-//			while ((current = br.readLine()) != null) { 
-//				System.out.println(current);
-//				r.append(current.trim());
-//			}
-//			return r.toString();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} 
-//		finally {
-//			client.disconnect();
-//			try {
-//				br.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//		return "";
+//        return responseString;
+
 	}
 }
