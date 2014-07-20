@@ -2,11 +2,14 @@ package com.napontaratan.wifi.controller;
 
 import java.io.File;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.net.http.HttpResponseCache;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiMarker;
@@ -45,6 +48,8 @@ public class WifiController {
 		activity.registerReceiver(wifiProcessor, onScanCompleted);
 	}
 	
+	// START SEARCH
+	
 	/**
 	 * Android 4.0 added a response cache to HttpURLConnection. You can enable HTTP response caching on supported devices using reflection as follows
 	 * http://developer.android.com/training/efficient-downloads/redundant_redundant.html
@@ -60,7 +65,20 @@ public class WifiController {
 		    System.out.println("HTTP response cache is unavailable.");
 		  }
 	}
+	
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	public void flushHttpResponseCache() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			// Flushing the cache forces its data to the filesystem. This ensures that all responses written to the cache will be readable the next time the activity starts.
+			HttpResponseCache cache = HttpResponseCache.getInstalled();
+			if(cache != null) {
+				cache.flush();
+			}
+		}
+	}
 
+	// END SEARCH
+	
 	/**
 	 * 
 	 * @param context

@@ -42,10 +42,6 @@ import com.napontaratan.wifi.controller.WifiController;
 import com.napontaratan.wifi.geocode.GeocodeService;
 import com.napontaratan.wifi.model.WifiMarker;
 
-/*
- * TODO
- * Extract some stuff to WifiController
- */
 public class MapActivity extends Activity {
 
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
@@ -73,14 +69,9 @@ public class MapActivity extends Activity {
 		controller.registerReceivers();
 	}
 	
-	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	protected void onStop() {
 		super.onStop();
-		// Flushing the cache forces its data to the filesystem. This ensures that all responses written to the cache will be readable the next time the activity starts.
-		HttpResponseCache cache = HttpResponseCache.getInstalled();
-		if(cache != null) {
-			cache.flush();
-		}
+		controller.flushHttpResponseCache();
 	}
 	
 	/**
@@ -288,7 +279,6 @@ public class MapActivity extends Activity {
 				// get wifi locations
 				controller.createGetLocationsTask(currentActivityContext).execute(myLatLng);
 				clearResultOverlay();
-				//TODO pushWifiLocation using myLatLng
 			}
 		});
 		showResultOverlay();
@@ -328,5 +318,4 @@ public class MapActivity extends Activity {
 				(findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && 
 				(findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
 	}
-	
 }
