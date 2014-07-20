@@ -1,18 +1,15 @@
 package com.napontaratan.wifi.view;
 
-import java.io.File;
 import java.util.List;
-import android.annotation.SuppressLint;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Address;
 import android.location.Location;
 import android.net.http.HttpResponseCache;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
@@ -40,13 +38,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.napontaratan.wifi.R;
 import com.napontaratan.wifi.controller.LocationServices;
-import com.napontaratan.wifi.controller.ServerConnection;
-import com.napontaratan.wifi.controller.ServerConnectionFailureException;
-import com.napontaratan.wifi.controller.WifiProcessor;
-import com.napontaratan.wifi.controller.WifiScanner;
+import com.napontaratan.wifi.controller.WifiController;
 import com.napontaratan.wifi.geocode.GeocodeService;
 import com.napontaratan.wifi.model.WifiMarker;
 
+/*
+ * TODO
+ * Extract some stuff to WifiController
+ */
 public class MapActivity extends Activity {
 
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
@@ -58,16 +57,20 @@ public class MapActivity extends Activity {
 	private LocationServices locationServices; 
 	private LatLng myLatLng;
 
+	private WifiController controller;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
 		
-		enableHttpResponseCache();
+		controller = new WifiController(this);
+		
+		controller.enableHttpResponseCache();
 		setUpMap();
 		setUpSearch();
 		locationServices = new LocationServices(this);
-		registerReceivers();
+		controller.registerReceivers();
 	}
 	
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -78,23 +81,6 @@ public class MapActivity extends Activity {
 		if(cache != null) {
 			cache.flush();
 		}
-	}
-	
-	/**
-	 * Register wifi scan and process receivers
-	 * @author Napon Taratan
-	 */
-	public void registerReceivers() {
-		System.out.println("checked");
-		WifiScanner wifiScanner = new WifiScanner();
-		IntentFilter onNewWifiDiscovered = new IntentFilter();
-		onNewWifiDiscovered.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
-		registerReceiver(wifiScanner, onNewWifiDiscovered);
-		
-		WifiProcessor wifiProcessor = new WifiProcessor();
-		IntentFilter onScanCompleted = new IntentFilter();
-		onScanCompleted.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-		registerReceiver(wifiProcessor, onScanCompleted);
 	}
 	
 	/**
@@ -144,7 +130,7 @@ public class MapActivity extends Activity {
 					Location myLocation = locationServices.getLocation();
 					if(myLocation != null) {
 						myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-						new GetLocationsTask(currentActivityContext).execute(myLatLng);
+						controller.createGetLocationsTask(currentActivityContext).execute(myLatLng);
 					} else {
 						Toast.makeText(currentActivityContext, R.string.my_location_unavailable_msg, Toast.LENGTH_LONG).show();
 						// open up location settings
@@ -171,64 +157,14 @@ public class MapActivity extends Activity {
 	 * @param marker - Marker to plot on the map
 	 * @author Napon Taratan
 	 */
-	private void plotMarker(WifiMarker marker) {
-		map.addMarker(new MarkerOptions()
-				.position(new LatLng(
-				marker.getLocation().latitude,
-				marker.getLocation().longitude))
-				.title("SSID: " + marker.getSSID()));
+	public void plotMarker(WifiMarker marker) {
+		map.addMarker(new MarkerOptions().position(
+				new LatLng(
+						marker.location.latitude,
+						marker.location.longitude)
+				));
 	}
 
-	/**
-	 * Create a single thread to fetch locations based on the user input and plot them on the map
-	 * Also start a loading wheel to work in progress
-	 * 
-	 * @author Napon Taratan
-	 */
-	private class GetLocationsTask extends AsyncTask<LatLng, Void, Void>  {
-
-		private ProgressDialog dialog;
-
-		private ServerConnection connection = 
-				ServerConnection.getInstance();
-
-		public GetLocationsTask(Context c){
-			dialog = new ProgressDialog(c);
-		}
-
-		// show the spinning loading wheel for style points
-		@Override
-		protected void onPreExecute() {
-			dialog.setMessage("Retrieving WiFi locations...");
-			dialog.show(); 
-		}
-
-		// create web request and parse the response
-		@Override
-		protected Void doInBackground(LatLng ...latLng) {
-			String url = connection.WEBSERVER + "locations.php?lat=" + latLng[0].latitude + "&lon=" + latLng[0].longitude + "&rad=3";
-			try {
-				connection.parseJSONLocationData(
-						connection.makeJSONQuery(url));
-			} catch (ServerConnectionFailureException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		// plot the locations on the map
-		@Override
-		protected void onPostExecute(Void v) {
-			List<WifiMarker> markers = connection.getWifiMarkers();
-			for(WifiMarker m : markers){
-				plotMarker(m);
-			}
-
-			System.out.println("*** NUMBER OF LOCATIONS = " + markers.size() + " ***");
-			dialog.dismiss();
-		}
-	}
-	
 	// =================  END OF MAP ==================================
 	
 	// ================= START OF SEARCH ===================================
@@ -350,7 +286,7 @@ public class MapActivity extends Activity {
 				Address addressSelected = addresses.get(index);
 				myLatLng = new LatLng(addressSelected.getLatitude(), addressSelected.getLongitude());
 				// get wifi locations
-				new GetLocationsTask(currentActivityContext).execute(myLatLng);
+				controller.createGetLocationsTask(currentActivityContext).execute(myLatLng);
 				clearResultOverlay();
 				//TODO pushWifiLocation using myLatLng
 			}
@@ -392,22 +328,5 @@ public class MapActivity extends Activity {
 				(findViewById(R.id.search_background).getVisibility() == View.VISIBLE) && 
 				(findViewById(R.id.search_result_list).getVisibility() == View.VISIBLE);
 	}
-	
-	/**
-	 * Android 4.0 added a response cache to HttpURLConnection. You can enable HTTP response caching on supported devices using reflection as follows
-	 * http://developer.android.com/training/efficient-downloads/redundant_redundant.html
-	 */
-	private void enableHttpResponseCache() {
-		  try {
-		    long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
-		    File httpCacheDir = new File(getCacheDir(), "http");
-		    Class.forName("android.net.http.HttpResponseCache")
-		         .getMethod("install", File.class, long.class)
-		         .invoke(null, httpCacheDir, httpCacheSize);
-		  } catch (Exception httpResponseCacheNotAvailable) {
-		    System.out.println("HTTP response cache is unavailable.");
-		  }
-	}
-	// =============== END OF SEARCH ===========================================
 	
 }

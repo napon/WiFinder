@@ -1,16 +1,5 @@
-package com.napontaratan.wifi.controller;
+package com.napontaratan.wifi.server;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,14 +11,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
 import android.annotation.SuppressLint;
-import android.net.Uri;
-import android.net.http.HttpResponseCache;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiConnection;
 import com.napontaratan.wifi.model.WifiMarker;
+import com.napontaratan.wifi.model.WifiRecord;
 
 /**
  * Establish connection with the remote server for
@@ -39,67 +27,163 @@ import com.napontaratan.wifi.model.WifiMarker;
  * @author Napon Taratan
  */
 public class ServerConnection {
-	
+	/**
+	 * Singleton instance.
+	 */
 	private static ServerConnection instance = null;
-	public final String WEBSERVER = "http://www.napontaratan.com/wifinder/";
+	
+	/**
+	 * URL of the web server.
+	 */
+	public static final String WEBSERVER = 
+			"http://www.napontaratan.com/wifinder/";
 
-	final List<WifiMarker> markers = new ArrayList<WifiMarker>();
-
-	// allow only one instance of WiFinderServerConnection
+	/**
+	 * Name of the script used to fetch data from server.
+	 */
+	public static final String GET_SCRIPT = "location.php";
+	
+	/**
+	 * Name of the script used to send data to server.
+	 */
+	public static final String ADD_SCRIPT = "add_location.php";
+	
+	/**
+	 * Name of the database.
+	 */
+	public static final String DATABASE = "napontar_wifinder";
+	
+	/**
+	 * Name of the table.
+	 */
+	public static final String TABLE = "WIFI_LOCATIONS";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding 
+	 * to <code>ssid</code> of <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String SSID = "ssid";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding
+	 * to <code>signalStrength</code> in <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String SIGNAL_STRENGTH = "str";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding 
+	 * to <code>location.latitude</code> of <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String LATITUDE = "lat";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding 
+	 * to <code>location.longitude</code> of <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String LONGITUDE = "lon";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding 
+	 * to <code>timeDiscovered</code> of <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String TIME_DISCOVERED = "time";
+	
+	/**
+	 * Name of the PHP and SQL field corresponding 
+	 * to <code>userId</code> of <code>WifiConnection</code>.
+	 * 
+	 * @see WifiConnection
+	 */
+	public static final String USER_ID = "user";
+	
+	/**
+	 * Name of the PHP field used to specify the radius around
+	 * a specific point when fetching data from the server.
+	 */
+	public static final String RADIUS = "rad";
+	
+	/**
+	 * Disable direct instantiation of singleton class.
+	 */
 	private ServerConnection() {}
 
+	/**
+	 * @return Singleton instance of <code>ServerConnection</code>.
+	 */
 	public static ServerConnection getInstance() {
 		if(instance == null)
 			instance = new ServerConnection();
 		return instance;
 	}
-
-	public List<WifiMarker> getWifiMarkers(){
-		return markers;
-	}
 	
 	/**
-	 * FETCH
-	 * Parses the JSON response and populates the list
+	 * Gets a WifiMarker object from the server.
 	 * 
-	 * @param response
+	 * @param location Location used for the query.
+	 * @throws ServerConnectionFailureException
 	 * @author Napon Taratan
+	 * @author Kurt Ahn
 	 */
-	public void parseJSONLocationData(String response){
+	public WifiMarker getWifiMarker(LatLng location) 
+			throws ServerConnectionFailureException {
+		String response = makeJSONQuery(
+				WEBSERVER + GET_SCRIPT + "?" +
+				LATITUDE + "=" + location.latitude + "&" +
+				LONGITUDE + "=" + location.longitude + "&" +
+				RADIUS + "=" + 0.100);
+		
+		WifiMarker marker = new WifiMarker(location);
+		
 		try {
 			JSONTokener raw 	= new JSONTokener(response);
 			JSONArray jsArray	= new JSONArray(raw);
+			
 			for(int i = 0; i < jsArray.length(); i++) {
 				JSONObject obj = (JSONObject) jsArray.get(i);
-				WifiMarker marker = new WifiMarker(
-								obj.getString("Name"), 
-								"", 
-								new LatLng(obj.getDouble("Latitude"), 
-								obj.getDouble("Longitude")));
-				markers.add(marker);
+				
+				WifiRecord record = new WifiRecord(marker,
+						obj.getString(SSID),
+						new LatLng(
+								obj.getDouble(LATITUDE),
+								obj.getDouble(LONGITUDE)),
+						obj.getInt(SIGNAL_STRENGTH));
+				
+				marker.addRecord(record);
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		return marker;
 	}
 
 	/**
-	 * PUSH
-	 * Pushes a new WifiConnection to the web server
+	 * Add a new WifiConnection to the web server
 	 * 
 	 * @param connection - WifiConnection to push
 	 * @author Napon Taratan
 	 * @throws ServerConnectionFailureException 
 	 */
-	public void pushNewConnection(WifiConnection connection) 
+	public void addWifiConnection(WifiConnection connection) 
 			throws ServerConnectionFailureException {
-		String response = makeJSONQuery(
-			WEBSERVER + "add_location.php?ssid=" + encode(connection.ssid) +
-			"&signal=" + convertToBarLevel(connection.strength) +
-			"&lat=" + connection.location.latitude +
-			"&lon=" + connection.location.longitude +
-			"&user=" + connection.clientId +
-			"&date=" + connection.date);
+		makeJSONQuery(
+				WEBSERVER + ADD_SCRIPT + "?" +
+				SSID + "=" + encode(connection.ssid) + "&" +
+				SIGNAL_STRENGTH + "=" + connection.signalStrength + "&" +
+				LATITUDE + "=" + connection.location.latitude + "&" + 
+				LONGITUDE + "=" + connection.location.longitude + "&" +
+				USER_ID + "=" + connection.userId + "&" + 
+				TIME_DISCOVERED + "=" + connection.timeDiscovered);
 	}
 	
 	/**
@@ -128,25 +212,33 @@ public class ServerConnection {
 	 * @author Napon Taratan
 	 */
 	private String encode(String url) {
+		/*
+		 * TODO
+		 * '+' is probably a valid character for SSID's.
+		 * Consider maybe ASCII encoding:
+		 * ' ' --> '%20'
+		 * '%' --> '%25' etc.
+		 */
 		return url.replace(' ', '+');
 	}
 
 	/**
 	 * Creates an HTTP request to the server and returns the server's response
 	 * 
-	 * @param server - url of request
+	 * @param url URL of request
 	 * @author Napon Taratan
 	 * @throws ServerConnectionFailureException 
 	 */
 	@SuppressLint("NewApi")
-	public String makeJSONQuery(String server) throws ServerConnectionFailureException {
+	public String makeJSONQuery(String url) 
+			throws ServerConnectionFailureException {
 		
 		String responseString = null;
         
         try {
-            System.out.println("make JSON query to server \n " + server);
+            System.out.println("make JSON query to server \n " + url);
             HttpClient httpClient = new DefaultHttpClient();
-            HttpResponse response = httpClient.execute(new HttpGet(server));
+            HttpResponse response = httpClient.execute(new HttpGet(url));
             responseString = new BasicResponseHandler().handleResponse(response);
             System.out.println(responseString);
         } catch (Exception e) {

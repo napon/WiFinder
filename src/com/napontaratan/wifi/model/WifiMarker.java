@@ -1,13 +1,6 @@
 package com.napontaratan.wifi.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.sql.Date;
-
-import android.net.wifi.ScanResult;
+import java.util.ArrayList;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -27,43 +20,30 @@ import com.google.android.gms.maps.model.LatLng;
  * @author Kurt Ahn
  */
 public class WifiMarker {
-    /**
-     * Unique ID of the connection.
-     */
-	private final String ssid;
-	
 	/**
-	 * Unique ID of the access point.
+	 * 
 	 */
-	private final String bssid;
+    private final ArrayList<WifiRecord> records =
+    		new ArrayList<WifiRecord>();
 	
 	/**
 	 * Location of discovery.
 	 */
-	private final LatLng location;
-	
-	
-	// What's the point of having getters for final fields?
-	// Can't we just make the fields public?
-	// ==== getters ====
-	public String getSSID() {
-		return ssid;
-	}
+	public final LatLng location;
 
-	public String getBSSID() {
-		return bssid;
-	}
-
-	public LatLng getLocation() {
-		return location;
-	}
-
-	public WifiMarker(String ssid, String bssid, LatLng location) {
-		// Temporary stuff
-		this.ssid = ssid;
-		this.bssid = bssid;
+	/**
+	 * 
+	 * @param location
+	 */
+	public WifiMarker(LatLng location) {
 		this.location = location;
 	}
 	
-	
+	/**
+	 * 
+	 * @param record
+	 */
+	public void addRecord(WifiRecord record) {
+		records.add(record);
+	}
 }

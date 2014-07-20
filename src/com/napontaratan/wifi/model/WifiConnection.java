@@ -1,10 +1,6 @@
 package com.napontaratan.wifi.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.sql.Date;
 
 import android.net.wifi.ScanResult;
@@ -26,21 +22,21 @@ import com.google.android.gms.maps.model.LatLng;
  * 
  * @author Kurt Ahn
  */
-public class WifiConnection {
+public class WifiConnection implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
      * Unique ID of the connection.
      */
 	public final String ssid;
 	
-	/**
-	 * Unique ID of the access point.
-	 */
-	public final String bssid;
-	
-	/**
+	/** 
 	 * Detected signal strength.
 	 */
-	public final int strength;
+	public final int signalStrength;
 	
 	/**
 	 * Location of discovery.
@@ -50,16 +46,12 @@ public class WifiConnection {
 	/**
 	 * Time of discovery.
 	 */
-	public final Date date;
+	public final transient Date timeDiscovered;
 	
 	/**
 	 * Unique ID given to the application's user.
 	 */
-	public final String clientId;
-	
-	/*
-	 * TODO: We need information about whether the connection is secured, etc.
-	 */
+	public final String userId;
 	
 	/**
 	 * Construct a WifiConnection.
@@ -67,20 +59,19 @@ public class WifiConnection {
 	 * @param scan - Data obtained from scanning for available wifi connections.
 	 *        Contains the SSID, BSSID, signal strength, time recorded, etc.
 	 * @param location - Location of discovery.
-	 * @param date - Date of discovery.
-	 * @param clientId - Unique ID given to the application's user.
+	 * @param time - Time of discovery.
+	 * @param userId - Unique ID given to the application's user.
 	 *
 	 * @author Kurt Ahn
 	 */
 	public WifiConnection(
-			ScanResult scan, LatLng location, Date date, String clientId) {
+			ScanResult scan, LatLng location, Date time, String userId) {
 		this.ssid = scan.SSID;
-		this.bssid = scan.BSSID;
-		this.strength = scan.level;
+		this.signalStrength = scan.level;
 		this.location = location;
 		//this.time = scan.timestamp; // This requires min API level of 17
-		this.date = date;
-		this.clientId = clientId;
+		this.timeDiscovered = time;
+		this.userId = userId;
 	}
 	
 	/**
@@ -92,42 +83,9 @@ public class WifiConnection {
 	public String toString() {
 		return
 			"SSID: " + ssid + "\n" +
-			"BSSID: " + bssid + "\n" +
-			"Strength: " + String.valueOf(strength) + "\n" +
+			"Signal Strength: " + String.valueOf(signalStrength) + "\n" +
 			"Location: " + location.latitude + " "  + location.longitude + "\n" +
-			"Time: " + String.valueOf(date) + "\n" + 
-			"Client ID: " + clientId;
-	}
-	
-	// =========================== Database related stuff below ===============================
-	
-	/**
-	 * Convert a WifiMarker object into an array of Bytes to be stored into the Database
-	 * @param obj - (Object) WifiMarker object
-	 * @return byte[]
-	 * @throws IOException
-	 * 
-	 * @author Napon Taratan
-	 */
-	public static byte[] serialize(Object obj) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ObjectOutputStream os = new ObjectOutputStream(out);
-		os.writeObject(obj);
-		return out.toByteArray();
-	}
-	
-	/**
-	 * Convert an array of Bytes back to its object form
-	 * @param data - Data to deserialize
-	 * @return (Object) WifiMarker object
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * 
-	 * @author Napon Taratan
-	 */
-	public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
-		ByteArrayInputStream in = new ByteArrayInputStream(data);
-		ObjectInputStream is = new ObjectInputStream(in);
-		return is.readObject();
+			"Time Discovered: " + timeDiscovered + "\n" + 
+			"User ID: " + userId;
 	}
 }

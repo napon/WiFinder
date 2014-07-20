@@ -1,4 +1,4 @@
-package com.napontaratan.wifi.controller;
+package com.napontaratan.wifi.server;
 
 public class ServerConnectionFailureException extends Exception {
 	public ServerConnectionFailureException() {

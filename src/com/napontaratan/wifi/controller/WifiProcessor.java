@@ -1,6 +1,6 @@
 package com.napontaratan.wifi.controller;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -14,10 +14,13 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.provider.Settings.Secure;
+import android.text.format.Time;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.napontaratan.wifi.database.OfflineWifiDB;
+import com.napontaratan.wifi.database.OfflineBuffer;
 import com.napontaratan.wifi.model.WifiConnection;
+import com.napontaratan.wifi.server.ServerConnection;
+import com.napontaratan.wifi.server.ServerConnectionFailureException;
 
 /**
  * BroadcastReceiver object triggered when a requested
@@ -26,8 +29,10 @@ import com.napontaratan.wifi.model.WifiConnection;
  * @author Kurt Ahn
  */
 public class WifiProcessor extends BroadcastReceiver {
-
-	private static OfflineWifiDB database = null;
+	/**
+	 * 
+	 */
+	private static OfflineBuffer database = null;
 	
 	/**
 	 * Process wifi scan results to produce WifiConnection objects,
@@ -61,7 +66,7 @@ public class WifiProcessor extends BroadcastReceiver {
 			Context context = params[0];
 			
 			// Create database for the first time.
-			if (database == null) database = new OfflineWifiDB(context);
+			if (database == null) database = new OfflineBuffer(context);
 			
 			WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 			
@@ -73,8 +78,10 @@ public class WifiProcessor extends BroadcastReceiver {
 			if(currentLocation == null) currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 			
 			LatLng location = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-			Date currentDate = new Date();
-			java.sql.Date date = new java.sql.Date(currentDate.getTime());
+			
+			Time now = new Time();
+			now.setToNow();
+			Date date = new Date(now.toMillis(true));
 			
 			String clientId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
 			
@@ -87,7 +94,7 @@ public class WifiProcessor extends BroadcastReceiver {
 					
 					// Send data directly to server.
 					try {
-						server.pushNewConnection(c);
+						server.addWifiConnection(c);
 					} catch (ServerConnectionFailureException e) {
 						System.out.println(
 								"Failed to connect to server." +
@@ -101,7 +108,7 @@ public class WifiProcessor extends BroadcastReceiver {
 					// Send WifiConnection object to server.
 					try {
 						WifiConnection next = database.pop();
-						server.pushNewConnection(next);
+						server.addWifiConnection(next);
 					} catch (ServerConnectionFailureException e) {
 						System.err.println(
 								"Failed to connect to server." +

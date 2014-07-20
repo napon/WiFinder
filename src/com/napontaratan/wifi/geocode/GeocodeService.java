@@ -17,8 +17,8 @@ import android.location.Geocoder;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.napontaratan.wifi.controller.ServerConnection;
-import com.napontaratan.wifi.controller.ServerConnectionFailureException;
+import com.napontaratan.wifi.server.ServerConnection;
+import com.napontaratan.wifi.server.ServerConnectionFailureException;
 
 /**
  * Geocoding service using Client-side geocoding (Android Geocoder) and fall back on Server-side geocoding (Google Geocoding API) 
