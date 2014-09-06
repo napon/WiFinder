@@ -6,9 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.SupplicantState;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 /**
  * BroadcastReceiver object triggered on:
@@ -17,13 +16,16 @@ import android.net.wifi.WifiManager;
  *	c) Location change.
  */
 public class WifiScanner extends BroadcastReceiver {
+	private static final String TAG = 
+			"com.napontaratan.wifi.controller.WifiScanner";
+	
 	/**
 	 * Request wifi scan to WifiManager object of the context.
 	 * @author Kurt Ahn
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		System.out.println("in scanner");
+		Log.d(TAG, "Scanning...");
 
 		ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);

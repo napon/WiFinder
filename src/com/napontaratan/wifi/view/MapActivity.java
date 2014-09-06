@@ -2,18 +2,16 @@ package com.napontaratan.wifi.view;
 
 import java.util.List;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Location;
-import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,7 +41,9 @@ import com.napontaratan.wifi.geocode.GeocodeService;
 import com.napontaratan.wifi.model.WifiMarker;
 
 public class MapActivity extends Activity {
-
+	private static final String TAG = 
+			"com.napontaratan.wifi.view.MapActivity";
+	
 	private static final LatLng VANCOUVER = new LatLng(49.22, -123.15);
 	private GoogleMap map;
 	private MapFragment mapFragment;
@@ -95,7 +95,7 @@ public class MapActivity extends Activity {
 	 */
 	private void setUpMap() {
 		if(map == null) {
-			System.out.println("map is null, setting it up");
+			Log.d(TAG, "map is null, setting it up");
 			mapFragment= ((MapFragment) getFragmentManager().findFragmentById(R.id.map));
 			map = mapFragment.getMap();
 			// hide zoom control so that it doesn't overlap the get current location button 
@@ -212,6 +212,8 @@ public class MapActivity extends Activity {
 			}
 		});			
 	} // END OF SET UP SEARCH 
+	
+	// ================= END OF SEARCH ===================================
 	
 	/**
 	 * Geocode address using Google Geocoding API to get latitude longitude for wifi api call, and plot nearby Wifi spots around the location on map

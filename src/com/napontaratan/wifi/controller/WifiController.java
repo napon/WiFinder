@@ -10,14 +10,17 @@ import android.net.http.HttpResponseCache;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.model.WifiMarker;
-import com.napontaratan.wifi.server.ServerConnection;
-import com.napontaratan.wifi.server.ServerConnectionFailureException;
+import com.napontaratan.wifi.server.DatabaseServerConnection;
 import com.napontaratan.wifi.view.MapActivity;
 
 public class WifiController {
+	private static final String TAG = 
+			"com.napontaratan.wifi.controller.WifiController";
+	
 	/**
 	 * 
 	 */
@@ -36,7 +39,7 @@ public class WifiController {
 	 * @author Napon Taratan
 	 */
 	public void registerReceivers() {
-		System.out.println("checked");
+		Log.d(TAG, "checked");
 		WifiScanner wifiScanner = new WifiScanner();
 		IntentFilter onNewWifiDiscovered = new IntentFilter();
 		onNewWifiDiscovered.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
@@ -47,8 +50,6 @@ public class WifiController {
 		onScanCompleted.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 		activity.registerReceiver(wifiProcessor, onScanCompleted);
 	}
-	
-	// START SEARCH
 	
 	/**
 	 * Android 4.0 added a response cache to HttpURLConnection. You can enable HTTP response caching on supported devices using reflection as follows
@@ -61,8 +62,8 @@ public class WifiController {
 		    Class.forName("android.net.http.HttpResponseCache")
 		         .getMethod("install", File.class, long.class)
 		         .invoke(null, httpCacheDir, httpCacheSize);
-		  } catch (Exception httpResponseCacheNotAvailable) {
-		    System.out.println("HTTP response cache is unavailable.");
+		  } catch (Exception e) {
+		    Log.d(TAG, "HTTP response cache is unavailable.");
 		  }
 	}
 	
@@ -76,8 +77,6 @@ public class WifiController {
 			}
 		}
 	}
-
-	// END SEARCH
 	
 	/**
 	 * 
@@ -98,9 +97,6 @@ public class WifiController {
 
 		private ProgressDialog dialog;
 
-		private ServerConnection connection = 
-				ServerConnection.getInstance();
-
 		private WifiMarker marker;
 		
 		public GetLocationsTask(Context c){
@@ -117,11 +113,7 @@ public class WifiController {
 		// create web request and parse the response
 		@Override
 		protected Void doInBackground(LatLng ... locations) {
-			try {
-				marker = connection.getWifiMarker(locations[0]);
-			} catch (ServerConnectionFailureException e) {
-				e.printStackTrace();
-			}
+			marker = DatabaseServerConnection.getWifiMarker(locations[0]);
 			return null;
 		}
 

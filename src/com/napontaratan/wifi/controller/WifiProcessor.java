@@ -1,5 +1,6 @@
 package com.napontaratan.wifi.controller;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
 
@@ -15,11 +16,12 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.provider.Settings.Secure;
 import android.text.format.Time;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.napontaratan.wifi.database.OfflineBuffer;
 import com.napontaratan.wifi.model.WifiConnection;
-import com.napontaratan.wifi.server.ServerConnection;
+import com.napontaratan.wifi.server.DatabaseServerConnection;
 import com.napontaratan.wifi.server.ServerConnectionFailureException;
 
 /**
@@ -32,7 +34,13 @@ public class WifiProcessor extends BroadcastReceiver {
 	/**
 	 * 
 	 */
-	private static OfflineBuffer database = null;
+	private static final String TAG = 
+			"com.napontaratan.wifi.controller.WifiProcessor";
+	
+	/**
+	 * 
+	 */
+	private static OfflineBuffer buffer = null;
 	
 	/**
 	 * Process wifi scan results to produce WifiConnection objects,
@@ -43,8 +51,7 @@ public class WifiProcessor extends BroadcastReceiver {
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		
-		System.out.println("in process");
+		Log.d(TAG, "in process");
 		new ProcessWifis().execute(context);
 		
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -59,19 +66,17 @@ public class WifiProcessor extends BroadcastReceiver {
 	 * so I created an AsyncTask to handle that - Napon
 	 */
 	private class ProcessWifis extends AsyncTask<Context,Void,Void> {
-
 		@Override
 		protected Void doInBackground(Context... params) {
-			
 			Context context = params[0];
 			
 			// Create database for the first time.
-			if (database == null) database = new OfflineBuffer(context);
+			if (buffer == null) buffer = new OfflineBuffer(context);
 			
 			WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 			
 			List<ScanResult> scans = manager.getScanResults();
-			System.out.println("found this many wifis: " + scans.size());
+			Log.d(TAG, "Found this many wifis: " + scans.size());
 			
 			LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 			Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -85,32 +90,34 @@ public class WifiProcessor extends BroadcastReceiver {
 			
 			String clientId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
 			
-			ServerConnection server = ServerConnection.getInstance();
-			if (manager.getConnectionInfo() != null /*Has internet?*/) {
+			// Check if the device is connected to the Internet.
+			if (manager.getConnectionInfo() != null) {
 				for (ScanResult s : scans) {
 					// Create WifiConnection object based on scan.
-					WifiConnection c = new WifiConnection(
-							s, location, date, clientId);
+					WifiConnection c = 
+							WifiConnection.createWifiConnection(
+									s, location, date, clientId);
 					
-					// Send data directly to server.
+					// Try to send the data straight to the server.
 					try {
-						server.addWifiConnection(c);
-					} catch (ServerConnectionFailureException e) {
-						System.out.println(
-								"Failed to connect to server." +
-								"Writing to database instead.");
+						DatabaseServerConnection.addWifiConnection(c);
+					} catch (IOException e) {
+						Log.d(TAG,
+								"Failure to push to the server; " +
+								"Pushing to the local buffer instead.");
 						e.printStackTrace();
-						database.push(c);
+						buffer.push(c);
+						return null;
 					}
 				}
 				
-				while (!database.isEmpty()) {
+				while (!buffer.isEmpty()) {
 					// Send WifiConnection object to server.
 					try {
-						WifiConnection next = database.pop();
-						server.addWifiConnection(next);
-					} catch (ServerConnectionFailureException e) {
-						System.err.println(
+						WifiConnection next = buffer.pop();
+						DatabaseServerConnection.addWifiConnection(next);
+					} catch (IOException e) {
+						Log.e(TAG,
 								"Failed to connect to server." +
 								"Connection data remains in database.");
 						e.printStackTrace();
@@ -119,11 +126,12 @@ public class WifiProcessor extends BroadcastReceiver {
 			} else {
 				for (ScanResult s : scans) {
 					// Create WifiConnection object based on scan.
-					WifiConnection c = new WifiConnection(
-							s, location, date, clientId);
+					WifiConnection c = 
+							WifiConnection.createWifiConnection(
+									s, location, date, clientId);
 					
 					// Push object to database.
-					database.push(c);
+					buffer.push(c);
 				}
 			}
 			return null;

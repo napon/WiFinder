@@ -16,8 +16,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.napontaratan.wifi.server.ServerConnection;
+import com.napontaratan.wifi.server.GeocodeServerConnection;
 import com.napontaratan.wifi.server.ServerConnectionFailureException;
 
 /**
@@ -28,16 +27,14 @@ import com.napontaratan.wifi.server.ServerConnectionFailureException;
 public class GeocodeService {
 	private Context context;
 	private List<Address> addresses;
-	private List<String> addressesStrings;
-	private String GOOGLE_GEOCODE_ENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json?";
+	private List<String> formattedAddresses;
+	//private String GOOGLE_GEOCODE_ENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json?";
 	private String GOOGLE_API_KEY = ""; // TODO: your api key here
-	private ServerConnection serverConnection;
 	private String DEBUG_TAG = "GEOCODE SERVICE";
 	private Boolean useGoogleFormattedAddress = false;
 	
 	public GeocodeService(Context context) {
 		this.context = context;
-		serverConnection = ServerConnection.getInstance();
 	}
 	
 	/**
@@ -64,7 +61,7 @@ public class GeocodeService {
 		useGoogleFormattedAddress = false;
 		Geocoder geocoder = new Geocoder(context);
 		addresses = new ArrayList<Address>();
-		addressesStrings = new ArrayList<String>();
+		formattedAddresses = new ArrayList<String>();
 		try {
 			addresses = geocoder.getFromLocationName(location, 15);
 		} catch (IOException e) {
@@ -81,69 +78,55 @@ public class GeocodeService {
 	private void getAddressFromGoogleGeocodingAPI(String location) {
 		useGoogleFormattedAddress = true;
 		addresses = new ArrayList<Address>();
-		addressesStrings = new ArrayList<String>();
-		// form url query 
-		// sent request using makeJSONQuery in server connection class
-		// parse query to get list of address
-		String queryUrl;
-		String response = null;
-		try {
-			queryUrl = GOOGLE_GEOCODE_ENDPOINT + "address=" + URLEncoder.encode(location, "UTF-8");
-			response = serverConnection.makeJSONQuery(queryUrl);
-			Log.d(DEBUG_TAG, response);
-		} catch (UnsupportedEncodingException e) {
-			Log.d(DEBUG_TAG,"fail to encode");
-			e.printStackTrace();
-		} catch (ServerConnectionFailureException e) {
-			Log.d(DEBUG_TAG,"fail to make query to google geocode api");
-			e.printStackTrace();
-		}
-		parseGeocodeApiResponse(response);										
+		formattedAddresses = new ArrayList<String>();
+		GeocodeServerConnection.getAddresses(location, 
+				addresses, formattedAddresses);
 	}
 	
-	/**
-	 * Parse json response from google geocoding API, stores list of address and addressStrings 
-	 * @param response
-	 */
-	private void parseGeocodeApiResponse(String response) {
-
-		JSONTokener jsonTokener = new JSONTokener(response);
-		try {
-			JSONObject jsonResponse = new JSONObject(jsonTokener);
-			JSONArray results = jsonResponse.getJSONArray("results");
-			for(int index = 0; index < results.length(); index++) {
-				// json address object
-				JSONObject jsonAddressObject = results.getJSONObject(index);
-				JSONArray addressComponentArray = jsonAddressObject.getJSONArray("address_components");
-				String formattedAddress = jsonAddressObject.getString("formatted_address");
-				Log.d(DEBUG_TAG, formattedAddress);
-				addressesStrings.add(formattedAddress);
-				JSONObject location = jsonAddressObject.getJSONObject("geometry").getJSONObject("location");
-				// make android address object, storing properties for use later (lat.long, addressline)
-				Address address = new Address(null);
-				address.setLatitude(location.getDouble("lat"));
-				address.setLongitude(location.getDouble("lng"));
-				for(int innerIndex = 0; innerIndex < addressComponentArray.length(); innerIndex ++) {
-					JSONObject jsonAddressComponentObject = addressComponentArray.getJSONObject(innerIndex);
-					address.setAddressLine(innerIndex, jsonAddressComponentObject.getString("short_name"));
-				}
-				addresses.add(address);
-			}
-			
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			Log.d(DEBUG_TAG, "json parsing error");
-			e.printStackTrace();
-		}
-	}
+//	/**
+//	 * Parse json response from google geocoding API, stores list of address and addressStrings 
+//	 * @param response
+//	 */
+//	private void parseGeocodeApiResponse(String response) {
+//
+//		JSONTokener jsonTokener = new JSONTokener(response);
+//		try {
+//			JSONObject jsonResponse = new JSONObject(jsonTokener);
+//			JSONArray results = jsonResponse.getJSONArray("results");
+//			for(int index = 0; index < results.length(); index++) {
+//				// json address object
+//				JSONObject jsonAddressObject = results.getJSONObject(index);
+//				JSONArray addressComponentArray = jsonAddressObject.getJSONArray("address_components");
+//				String formattedAddress = jsonAddressObject.getString("formatted_address");
+//				Log.d(DEBUG_TAG, formattedAddress);
+//				formattedAddresses.add(formattedAddress);
+//				JSONObject location = jsonAddressObject.getJSONObject("geometry").getJSONObject("location");
+//				// make android address object, storing properties for use later (lat.long, addressline)
+//				Address address = new Address(null);
+//				address.setLatitude(location.getDouble("lat"));
+//				address.setLongitude(location.getDouble("lng"));
+//				for(int innerIndex = 0; innerIndex < addressComponentArray.length(); innerIndex ++) {
+//					JSONObject jsonAddressComponentObject = addressComponentArray.getJSONObject(innerIndex);
+//					address.setAddressLine(innerIndex, jsonAddressComponentObject.getString("short_name"));
+//				}
+//				addresses.add(address);
+//			}
+//			
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			Log.d(DEBUG_TAG, "json parsing error");
+//			e.printStackTrace();
+//		}
+//	}
 	
 	/**
 	 * Format addresses into list of strings and stores them
 	 */
 	public List<String> formatAddressToStrings() {
 		// 2) using google formatted address and the formatted address exist
-		if(addresses == null || (useGoogleFormattedAddress && (addressesStrings.size() > 0)) ) {
-			return addressesStrings;
+		if(addresses == null || (useGoogleFormattedAddress && 
+				(formattedAddresses.size() > 0)) ) {
+			return formattedAddresses;
 		}
 		// format each address into one-line String
 		for(Address address: addresses) {
@@ -156,10 +139,10 @@ public class GeocodeService {
 				index ++;
 			}
 			if(!addressText.equals("")) {
-				addressesStrings.add(addressText);
+				formattedAddresses.add(addressText);
 			}
-		}		
-		return addressesStrings;
+		}
+		return formattedAddresses;
 	}
 	
 	
@@ -171,6 +154,4 @@ public class GeocodeService {
 	private boolean hasAddress(List<Address> addresses) {
 		return (addresses != null) && (addresses.size() > 0);
 	}
-	
-
 }

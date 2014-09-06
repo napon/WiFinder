@@ -11,16 +11,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.napontaratan.wifi.model.WifiConnection;
 
 /**
- * Offline database to store new WifiConnections waiting to be pushed to the remote server
- * Implemented as a Queue
+ * Offline buffer to store new WifiConnections waiting 
+ * to be pushed to the remote server, implemented as a queue.
  * 
  * @author Napon Taratan
  */
 public class OfflineBuffer extends SQLiteOpenHelper {
+	private static final String TAG = 
+			"com.napontaratan.wifi.database.OfflineBuffer";
 
 	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_NAME = "OFFLINE_DATABASE";
@@ -67,6 +70,9 @@ public class OfflineBuffer extends SQLiteOpenHelper {
 		try {
 			// push if cursor is empty or last update was long enough ago
 			if (shouldPush(connection)) {
+				Log.d(TAG,
+						"Pushing new connection: " + connection);
+				
 				values.put(KEY_DATA, serialize(connection));
 				values.put(KEY_TIME, connection.timeDiscovered.getTime());
 				
@@ -74,8 +80,8 @@ public class OfflineBuffer extends SQLiteOpenHelper {
 					throw new IOException();
 			}
 		} catch (IOException e) {
-			System.out.println("Failed to push new entry.");
-			e.printStackTrace();
+			Log.e(TAG, "Failed to push new entry.");
+			Log.e(TAG, Log.getStackTraceString(e));
 		} finally {
 			database.close();
 		}
@@ -139,8 +145,8 @@ public class OfflineBuffer extends SQLiteOpenHelper {
 				db.delete(TABLE_NAME, KEY_ID + "=?", new String[] {objId});
 			}
 		} catch (IOException e) {
-			System.out.println("Failed to pop entry.");
-			e.printStackTrace();
+			Log.e(TAG, "Failed to pop the entry.");
+			Log.e(TAG, Log.getStackTraceString(e));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} finally {

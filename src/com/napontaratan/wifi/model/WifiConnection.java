@@ -24,6 +24,44 @@ import com.google.android.gms.maps.model.LatLng;
  */
 public class WifiConnection implements Serializable {
 	/**
+	 * Creates and returns a WifiConnection object if the connection
+	 * is insecure (open).
+	 * 
+	 * @param scan
+	 * @param location
+	 * @param time
+	 * @param userId
+	 * @return A valid WifiConnection object if the connection is 
+	 * insecure and <code>null</code> otherwise.
+	 */
+	public static WifiConnection createWifiConnection(
+			ScanResult scan, LatLng location, Date time, String userId) {
+		if (isOpen(scan))
+			return new WifiConnection(scan.SSID, scan.level,
+					location, time, userId);
+		else
+			return null;
+	}
+	
+	/**
+	 * Determines whether the scanned connection <code>scan</code> 
+	 * is open. <code>scan</code> is deemed open if its 
+	 * <code>capabilities</code> include any of the recognized 
+	 * wifi protection schemes.
+	 * 
+	 * @param scan 
+	 * @return <code>true</code> if <code>scan</code> is open,
+	 * <code>false</code> otherswise.
+	 */
+	private static boolean isOpen(ScanResult scan) {
+		String[] modes = {"PSK", "WEP", "EAP"};
+		for (String mode : modes)
+			if (scan.capabilities.contains(mode))
+				return false;
+		return true;
+	}
+	
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
@@ -56,18 +94,19 @@ public class WifiConnection implements Serializable {
 	/**
 	 * Construct a WifiConnection.
 	 *
-	 * @param scan - Data obtained from scanning for available wifi connections.
-	 *        Contains the SSID, BSSID, signal strength, time recorded, etc.
-	 * @param location - Location of discovery.
-	 * @param time - Time of discovery.
-	 * @param userId - Unique ID given to the application's user.
+	 * @param ssid .
+	 * @param signalStrength
+	 * @param location Location of discovery.
+	 * @param time Time of discovery.
+	 * @param userId Unique ID given to the application's user.
 	 *
 	 * @author Kurt Ahn
 	 */
-	public WifiConnection(
-			ScanResult scan, LatLng location, Date time, String userId) {
-		this.ssid = scan.SSID;
-		this.signalStrength = scan.level;
+	private WifiConnection(
+			String ssid, int signalStrength,
+			LatLng location, Date time, String userId) {
+		this.ssid = ssid;
+		this.signalStrength = signalStrength;
 		this.location = location;
 		//this.time = scan.timestamp; // This requires min API level of 17
 		this.timeDiscovered = time;
